@@ -1,6 +1,26 @@
+# Dependencies
 node_modules/
+
+# Build output (reproducible per Build)
 dist/
 cache/
+*.tsbuildinfo
+
+# Local dev/test artifacts
 .tmp/
+
+# Env & secrets
 .env
+.env.*
 *.log
+
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors
+.idea/
+.vscode/
+*.swp
