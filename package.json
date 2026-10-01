@@ -1,0 +1,15 @@
+{
+  "name": "wp2static",
+  "version": "0.1.0",
+  "description": "Generic WordPress-to-static converter - local wizard UI + Bun backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun src/server.ts"
+  },
+  "devDependencies": {
+    "@types/turndown": "^5.0.5",
+    "cheerio": "^1.0.0",
+    "turndown": "^7.2.0"
+  }
+}
