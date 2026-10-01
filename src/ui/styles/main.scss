@@ -1,0 +1,22 @@
+/**
+ * wp2static Wizard — Main Sass Entry Point
+ * Atomic Design (abstracts → base → atoms → molecules → organisms), BEM naming.
+ */
+
+// 1. Abstracts
+@use 'abstracts/variables' as *;
+
+// 2. Base
+@use 'base/reset';
+@use 'base/base';
+@use 'base/typography';
+
+// 3. Atoms
+@use 'atoms/buttons';
+@use 'atoms/forms';
+
+// 4. Molecules
+@use 'molecules/layouts';
+
+// 5. Organisms
+@use 'organisms/wizard';

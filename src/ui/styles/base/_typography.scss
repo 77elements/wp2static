@@ -1,0 +1,33 @@
+/**
+ * Typography — genau 3 Schriftgrößen + die .h1–.h6-Klassen.
+ * Komponenten verwenden ausschließlich diese Variablen/Klassen.
+ */
+
+$font-size-big: 1.35rem;
+$font-size-base: 1rem;
+$font-size-small: 0.85rem;
+
+.h1,
+.h2 {
+  font-size: $font-size-big;
+}
+
+.h3,
+.h4 {
+  font-size: $font-size-base;
+}
+
+.h5,
+.h6 {
+  font-size: $font-size-small;
+}
+
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-weight: 600;
+  line-height: 1.3;
+}

@@ -1,0 +1,20 @@
+/**
+ * Minimal Reset — nur was der Wizard aktuell braucht.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}

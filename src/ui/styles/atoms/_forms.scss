@@ -1,0 +1,47 @@
+/**
+ * Forms — Label + Input als .form__row (1 Label, genau 1 Form-Element), .check-row, .form__note
+ */
+
+@use '../abstracts/variables' as *;
+@use '../base/typography' as *;
+
+.form__row {
+  display: grid;
+  gap: calc($gap / 2);
+
+  > label {
+    font-weight: 500;
+  }
+}
+
+.form__row + .form__row {
+  margin-top: $gap;
+}
+
+.input {
+  width: 100%;
+  padding: calc($gap * 0.75);
+  background: $color-white;
+  border: 1px solid $color-surface-muted;
+  color: $color-black;
+
+  &::placeholder {
+    color: $color-black;
+    opacity: 0.4;
+  }
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: calc($gap / 2);
+  align-items: center;
+  margin-bottom: calc($gap / 2);
+  cursor: pointer;
+}
+
+.form__note {
+  font-size: $font-size-small;
+  font-style: italic;
+  margin-bottom: 0;
+}

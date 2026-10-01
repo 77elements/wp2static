@@ -1,0 +1,40 @@
+/**
+ * Buttons — nur aktuell Benötigtes: Schwarz/Weiß, Hover, Disabled, Secondary.
+ */
+
+@use '../abstracts/variables' as *;
+
+.btn {
+  appearance: none;
+  user-select: none;
+  cursor: pointer;
+  display: inline-block;
+  padding: calc($gap / 2) $gap;
+  background: $color-black;
+  border: 1px solid $color-black;
+  color: $color-white;
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+
+  &:not(:disabled):hover {
+    background: $color-white;
+    color: $color-black;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--secondary {
+    background: $color-white;
+    border-color: $color-surface-muted;
+    color: $color-black;
+
+    &:not(:disabled):hover {
+      background: $color-surface-muted;
+      color: $color-black;
+    }
+  }
+}

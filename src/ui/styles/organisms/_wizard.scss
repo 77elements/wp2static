@@ -1,0 +1,56 @@
+/**
+ * Wizard — zentrierte Step-Card mit #efefef-Action-Bar unten
+ */
+
+@use '../abstracts/variables' as *;
+@use '../base/typography' as *;
+
+.wizard {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: $gap;
+
+  &__card {
+    width: 100%;
+    max-width: 560px;
+    background: $color-white;
+    border: 1px solid $color-surface-muted;
+  }
+
+  &__header {
+    padding: calc($gap * 1.5) calc($gap * 1.5) 0;
+  }
+
+  &__kicker {
+    font-size: $font-size-small;
+    margin-bottom: calc($gap / 2);
+  }
+
+  &__body {
+    padding: calc($gap * 1.5);
+  }
+
+  &__error {
+    font-size: $font-size-small;
+    font-weight: 600;
+    margin-bottom: calc($gap / 2);
+  }
+
+  &__preview {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    font-size: $font-size-small;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    border: 1px solid $color-surface-muted;
+    padding: calc($gap / 2);
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: $gap;
+  }
+
+  &__actions {
+    padding: $gap;
+    background: $color-surface-muted;
+  }
+}

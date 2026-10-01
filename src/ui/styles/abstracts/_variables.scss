@@ -1,0 +1,12 @@
+/**
+ * Design Tokens — bewusst minimal, wird bedarfsweise erweitert.
+ * Komponenten hardcoden keine Farben oder Abstände.
+ */
+
+// ---- Spacing ----
+$gap: 1rem;
+
+// ---- Farben (rudimentär: weiß / schwarz / #efefef) ----
+$color-white: #ffffff;
+$color-black: #000000;
+$color-surface-muted: #efefef;

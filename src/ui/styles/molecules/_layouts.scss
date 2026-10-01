@@ -1,0 +1,15 @@
+/**
+ * Layout Containers — rein strukturell, kein visuelles Styling.
+ * (Semantik-Muster aus noornote-v1; weitere Varianten entstehen bei Bedarf:
+ *  .l-row--right = eins rechts, .l-row--center = zentriert,
+ *  .l-row--split = erstes Kind links / letztes Kind rechts)
+ */
+
+@use '../abstracts/variables' as *;
+
+.l-row--end-pair {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: end;
+  gap: calc($gap / 2);
+}

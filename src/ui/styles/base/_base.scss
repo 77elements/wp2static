@@ -1,0 +1,32 @@
+/**
+ * Base Elements — nur aktuell Benötigtes.
+ */
+
+@use '../abstracts/variables' as *;
+@use './typography' as *;
+
+body {
+  background: $color-white;
+  color: $color-black;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: $font-size-base;
+  line-height: 1;
+}
+
+p,
+li {
+  line-height: 1.5;
+}
+
+p {
+  margin-bottom: $gap;
+}
+
+ul {
+  margin: 0 0 $gap;
+  padding-left: 1.25rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
