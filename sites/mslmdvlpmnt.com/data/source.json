@@ -1,0 +1,11 @@
+{
+  "baseUrl": "https://mslmdvlpmnt.com/",
+  "sitemapUrl": "https://mslmdvlpmnt.com/sitemap.xml",
+  "kind": "index",
+  "children": [
+    "https://mslmdvlpmnt.com/post-sitemap.xml",
+    "https://mslmdvlpmnt.com/page-sitemap.xml",
+    "https://mslmdvlpmnt.com/project-sitemap.xml",
+    "https://mslmdvlpmnt.com/category-sitemap.xml"
+  ]
+}

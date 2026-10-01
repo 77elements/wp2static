@@ -3,16 +3,17 @@
  * Progressive Enhancement: alles funktioniert ohne JS (normale Form-POSTs).
  */
 
+import { BLOCK_LABELS } from '../wizard/blocks';
+
 const escapeHtml = (s: string): string =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
 
-export function layout(title: string, body: string, refreshSeconds?: number): string {
-  const refresh = refreshSeconds ? `\n<meta http-equiv="refresh" content="${refreshSeconds}">` : '';
+export function layout(title: string, body: string): string {
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">${refresh}
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)} — wp2static</title>
 <link rel="stylesheet" href="/main.css">
 <script type="module" src="/main.js"></script>
@@ -78,7 +79,13 @@ export function step1Done(slug: string, dirs: string[]): string {
 
 export function jobPage(
   slug: string,
-  job: { title: string; error?: string; items: Array<{ label: string; status: string; count?: number; error?: string }> },
+  job: {
+    status: 'running' | 'done';
+    title: string;
+    error?: string;
+    doneUrl?: string;
+    items: Array<{ label: string; status: string; count?: number; error?: string }>;
+  },
 ): string {
   const statusText = (status: string, count?: number): string => {
     if (status === 'done') return `${count ?? 0} URL${count === 1 ? '' : 's'}`;
@@ -86,14 +93,20 @@ export function jobPage(
     if (status === 'failed') return 'failed';
     return 'waiting';
   };
-  const rows = job.items
-    .map((i) => {
-      const error = i.error ? ` (${escapeHtml(i.error)})` : '';
-      return `<li><code>${escapeHtml(i.label)}</code> — ${statusText(i.status, i.count)}${error}</li>`;
-    })
-    .join('');
+  const row = (i: { label: string; status: string; count?: number; error?: string }): string => {
+    const error = i.error ? ` (${escapeHtml(i.error)})` : '';
+    return `<li data-label="${escapeHtml(i.label)}"><code>${escapeHtml(i.label)}</code> — <span data-status>${statusText(i.status, i.count)}</span>${error}</li>`;
+  };
   const done = job.items.filter((i) => i.status === 'done' || i.status === 'failed').length;
-  const error = job.error ? `<p class="wizard__error" role="alert">${escapeHtml(job.error)}</p>` : '';
+  const running = job.status === 'running';
+  const progress = `<p data-job-progress data-running="${running}">Processed ${done} of ${job.items.length}${running ? ' — updates automatically' : ''}.</p>`;
+  const error = job.error
+    ? `<pre class="wizard__preview wizard__error" role="alert">${escapeHtml(job.error)}</pre>`
+    : '';
+  const backHref = job.doneUrl ?? `/wizard/${escapeHtml(slug)}/source`;
+  const footer = running
+    ? `<a class="btn btn--secondary" href="">Refresh</a>`
+    : `<a class="btn" href="${backHref}">Back</a>`;
   return layout(`${job.title} — ${slug}`, `
 <main class="wizard">
   <section class="wizard__card">
@@ -102,17 +115,15 @@ export function jobPage(
       <h1 class="h1">${escapeHtml(job.title)}</h1>
     </header>
     <div class="wizard__body">
-      <p>Processed ${done} of ${job.items.length} — this page updates automatically.</p>
+      ${progress}
       ${error}
-      <ul>${rows}</ul>
+      <ul data-job-items>${job.items.map(row).join('')}</ul>
     </div>
     <footer class="wizard__actions">
-      <div class="l-row--end-pair">
-        <button class="btn" type="button" disabled>Working…</button>
-      </div>
+      <div class="l-row--end-pair">${footer}</div>
     </footer>
   </section>
-</main>`, 2);
+</main>`);
 }
 
 export function sourceForm(
@@ -235,7 +246,8 @@ export function extractionForm(
     selectedUrl?: string;
     selectors?: string;
     error?: string;
-    result?: { url: string; title: string; description: string; datePublished: string; selectorUsed: string; markdown: string };
+    result?: { url: string; title: string; description: string; datePublished: string; selectorUsed: string; html: string; blocks: Array<{ origClass: string; html: string }> };
+    labeledBlocks?: Array<{ origClass: string; html: string; current: string | null; suggested: string }>;
   },
 ): string {
   const optgroups = opts.groups
@@ -251,14 +263,47 @@ export function extractionForm(
     })
     .join('');
 
-  const result = opts.result
+  // result.html ist sanitisiert (Tag-Allowlist, keine Klassen/Events) — darf roh gerendert werden.
+  // Gelabelte Blöcke (≠ article) werden abgeblendet, bleiben aber sichtbar (korrigierbar).
+  const labelBar = (index: number, origClass: string, current: string | null): string => {
+    const options = BLOCK_LABELS.map(
+      (l) => `<option value="${l}"${l === (current ?? 'article') ? ' selected' : ''}>${l}</option>`,
+    ).join('');
+    return `
+      <div class="wizard__blocklabel">
+        <form method="post" action="/wizard/${escapeHtml(slug)}/label">
+          <input type="hidden" name="url" value="${escapeHtml(opts.result!.url)}">
+          <input type="hidden" name="block" value="${index}">
+          <input type="hidden" name="origclass" value="${escapeHtml(origClass)}">
+          <select class="input" name="label" aria-label="Block type">${options}</select>
+          <button class="btn" type="submit">Apply</button>
+        </form>
+      </div>`;
+  };
+  const labeled = opts.labeledBlocks?.length
+    ? opts.labeledBlocks
+        .map(
+          (b, i) => `
+      <div class="wizard__block${b.current && b.current !== 'article' ? ' wizard__block--nonarticle' : ''}">
+        ${b.html}${labelBar(i, b.origClass, b.current ?? b.suggested)}
+      </div>`,
+        )
+        .join('')
+    : (opts.result?.html ?? '');
+  const result = opts.result?.html
     ? `
-      <h2 class="h3">Preview</h2>
-      <p><strong>Title:</strong> ${escapeHtml(opts.result.title)}</p>
-      <p><strong>Description:</strong> ${escapeHtml(opts.result.description)}</p>
-      <p><strong>Date published:</strong> ${escapeHtml(opts.result.datePublished || '—')}</p>
-      <p><strong>Selector used:</strong> <code>${escapeHtml(opts.result.selectorUsed)}</code></p>
-      <pre class="wizard__preview">${escapeHtml(opts.result.markdown)}</pre>`
+      <section id="preview">
+        <h2 class="h3">Preview</h2>
+        <p><strong>Title:</strong> ${escapeHtml(opts.result.title)}</p>
+        <p><strong>Description:</strong> ${escapeHtml(opts.result.description)}</p>
+        <p><strong>Date published:</strong> ${escapeHtml(opts.result.datePublished || '—')}</p>
+        <p><strong>Selector used:</strong> <code>${escapeHtml(opts.result.selectorUsed)}</code></p>
+        <div class="article-content">${labeled}</div>
+        <details>
+          <summary>HTML source</summary>
+          <pre class="wizard__preview">${escapeHtml(opts.result.html)}</pre>
+        </details>
+      </section>`
     : '';
 
   return layout(`Extraction — ${slug}`, `
@@ -281,7 +326,7 @@ export function extractionForm(
           <input class="input" id="extract-selectors" name="selectors" type="text"
                  placeholder=".entry-content, article" value="${escapeHtml(opts.selectors ?? '')}">
         </div>
-        <p class="form__note">Empty = auto-detect (.entry-content, article, main).</p>
+        <p class="form__note">Defines the element wrapping the whole article (the innermost such element). Saved with the site and used for every page. Empty = auto-detect (.entry-content, .et_pb_post_content, article, main).</p>
       </form>
       ${result}
     </div>

@@ -1,13 +1,37 @@
 /**
- * Page fetching + content extraction (HTML → metadata + Markdown).
+ * Page fetching + content extraction (HTML → metadata + cleaned content HTML).
+ *
+ * Content-Vertrag: der Artikelinhalt wird als DOM übernommen — bereinigt auf
+ * semantische Tags, ohne WP-/Divi-Klassen und Styling-Attribute, gewrappt in
+ * ein einziges <div class="article-content">. Design entsteht später aus
+ * eigenen Templates (siehe AGENTS.md), nicht aus dem Scrape.
  */
 
 import * as cheerio from 'cheerio';
-import TurndownService from 'turndown';
+import type { ContentBlock } from './blocks';
 
 const UA = 'wp2static/0.1 (local converter)';
-const AUTO_SELECTORS = ['.entry-content', 'article', 'main'];
+const AUTO_SELECTORS = ['.entry-content', '.et_pb_post_content', 'article', 'main'];
 const MIN_CONTENT_LENGTH = 200;
+
+// Semantische Tags, die als Knoten erhalten bleiben (ohne Attribute außer den
+// hier genannten). b/i werden zu strong/em normalisiert.
+const ALLOWED: Record<string, readonly string[]> = {
+  a: ['href'],
+  img: ['src', 'alt', 'width', 'height'],
+  abbr: ['title'],
+};
+const KEEP = new Set([
+  'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'ul', 'ol', 'li',
+  'a', 'img', 'figure', 'figcaption',
+  'blockquote', 'cite',
+  'pre', 'code',
+  'strong', 'em', 'br', 'hr', 'abbr',
+  'table', 'thead', 'tbody', 'tr', 'th', 'td',
+]);
+// Komplett samt Kindern entfernen.
+const DROP = new Set(['script', 'style', 'noscript', 'link', 'meta', 'iframe', 'button', 'form', 'input', 'select', 'textarea']);
 
 export interface ExtractedPage {
   url: string;
@@ -15,7 +39,8 @@ export interface ExtractedPage {
   description: string;
   datePublished: string;
   selectorUsed: string;
-  markdown: string;
+  html: string;
+  blocks: ContentBlock[];
 }
 
 export async function fetchPage(url: string): Promise<string> {
@@ -56,6 +81,69 @@ function extractDatePublished($: cheerio.CheerioAPI): string {
   return date;
 }
 
+function safeUrl(raw: string, base: string): string | null {
+  try {
+    const url = new URL(raw, base);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+/** Erlaubte Attribute behalten, Rest strippen; href/src absolutieren. */
+function cleanAttrs($: cheerio.CheerioAPI, el: cheerio.Element, tag: string, pageUrl: string): void {
+  const allowedAttrs = ALLOWED[tag] ?? [];
+  for (const attr of Object.keys(el.attribs ?? {})) {
+    if (!allowedAttrs.includes(attr)) {
+      $(el).removeAttr(attr);
+      continue;
+    }
+    if (attr === 'href' || attr === 'src') {
+      const absolute = safeUrl(el.attribs[attr] ?? '', pageUrl);
+      if (absolute) el.attribs[attr] = absolute;
+      else $(el).removeAttr(attr);
+    }
+  }
+}
+
+const EMPTY_TRASH = ['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'cite', 'em', 'strong', 'figure'];
+
+/** Rekursive Bereinigung: erlaubte Tags behalten (samt erlaubter Attribute),
+ *  verbotene kinderlos entfernen, Layout-Tags (div, span, …) unwrappen. */
+function cleanChildren($: cheerio.CheerioAPI, node: cheerio.AnyNode, pageUrl: string): void {
+  for (const child of [...node.children]) {
+    if (child.type !== 'tag' && child.type !== 'script' && child.type !== 'style') {
+      // Textknoten bleiben; Kommentare und Sonstiges fliegen raus.
+      if (child.type !== 'text') $(child).remove();
+      continue;
+    }
+    const tag = child.tagName.toLowerCase();
+    if (DROP.has(tag)) {
+      $(child).remove();
+      continue;
+    }
+    if (tag === 'b') child.tagName = 'strong';
+    if (tag === 'i') child.tagName = 'em';
+
+    const clean = child.tagName.toLowerCase();
+    cleanChildren($, child, pageUrl);
+
+    if (!KEEP.has(clean)) {
+      $(child).replaceWith(child.children);
+      continue;
+    }
+
+    // Leere Inhaltsträger (Divi-Spacer & Co.) haben keinen Wert.
+    if (EMPTY_TRASH.includes(clean) && !child.children.length) {
+      $(child).remove();
+      continue;
+    }
+
+    cleanAttrs($, child as cheerio.Element, clean, pageUrl);
+  }
+}
+
 export function extractPage(html: string, url: string, selectors: string[]): ExtractedPage {
   const $ = cheerio.load(html);
 
@@ -65,27 +153,56 @@ export function extractPage(html: string, url: string, selectors: string[]): Ext
 
   const candidates = [...selectors.map((s) => s.trim()).filter(Boolean), ...AUTO_SELECTORS];
   let selectorUsed = '';
-  let contentHtml = '';
+  let container: cheerio.AnyNode | null = null;
 
   for (const selector of candidates) {
-    const el = $(selector).first();
-    if (el.text().trim().length > MIN_CONTENT_LENGTH) {
+    // Page-Builder-Seiten enthalten oft mehrere Fragmente eines Selektors —
+    // der erste Treffer ist nicht der Inhaltsreiche. Bester gewinnt.
+    let best: { node: cheerio.AnyNode; length: number } | null = null;
+    $(selector).each((_, el) => {
+      const length = $(el).text().trim().length;
+      if (!best || length > best.length) best = { node: el, length };
+    });
+    if (best && best.length > MIN_CONTENT_LENGTH) {
       selectorUsed = selector;
-      contentHtml = el.html() ?? '';
+      container = best.node;
       break;
     }
   }
 
-  if (!selectorUsed) {
+  if (!container || !selectorUsed) {
     throw new Error(`No content found (tried: ${candidates.join(', ')})`);
   }
 
-  const turndown = new TurndownService({
-    headingStyle: 'atx',
-    codeBlockStyle: 'fenced',
-    bulletListMarker: '-',
-  });
-  const markdown = turndown.turndown(contentHtml).trim();
+  // Blöcke = Top-Level-Kinder des Containers. Original-Klassen werden VOR dem
+  // Strippen gesichert (Fingerprint fürs Block-Labeling), dann wird jeder Block
+  // einzeln bereinigt.
+  const blocks: ContentBlock[] = [];
+  for (const child of [...(container as { children: cheerio.AnyNode[] }).children]) {
+    const origClass = child.type === 'tag' ? String(child.attribs?.['class'] ?? '') : '';
+    if (child.type === 'tag') {
+      const tag = child.tagName.toLowerCase();
+      if (tag === 'script' || tag === 'style') continue;
+      const isKeep = KEEP.has(tag);
+      cleanChildren($, child, url);
+      if (isKeep) cleanAttrs($, child as cheerio.Element, tag, url);
+      // Nicht-semantisches Block-Tag (div, span, …) selbst auflösen — sein
+      // gereinigtes Inneres ist der Block. Semantische Tags bleiben ganz erhalten.
+      const html = isKeep ? $.html(child) : $(child).html() ?? '';
+      if (html.trim()) blocks.push({ origClass, html });
+    } else if (child.type === 'text') {
+      const html = String((child as { data?: string }).data ?? '');
+      if (html.trim()) blocks.push({ origClass: '', html });
+    }
+  }
 
-  return { url, title, description, datePublished, selectorUsed, markdown };
+  return {
+    url,
+    title,
+    description,
+    datePublished,
+    selectorUsed,
+    html: `<div class="article-content">\n${blocks.map((b) => b.html).join('\n')}\n</div>`,
+    blocks,
+  };
 }

@@ -1,0 +1,32 @@
+{
+  "slug": "mslmdvlpmnt.com",
+  "title": "Collecting URLs",
+  "items": [
+    {
+      "label": "https://mslmdvlpmnt.com/post-sitemap.xml",
+      "status": "done",
+      "count": 29
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/page-sitemap.xml",
+      "status": "done",
+      "count": 12
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project-sitemap.xml",
+      "status": "done",
+      "count": 55
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category-sitemap.xml",
+      "status": "done",
+      "count": 10
+    }
+  ],
+  "id": "901b1792",
+  "status": "done",
+  "startedAt": 1790883832795,
+  "updatedAt": 1790883835700,
+  "doneUrl": "/wizard/mslmdvlpmnt.com/extracted",
+  "finishedAt": 1790883835700
+}

@@ -173,9 +173,9 @@ Lokaler Artikel-Editor, pro Site nutztbar (`sites/<name>/`). Wird **ausschließl
 |---|---|---|
 | 1 | **Website-Name abfragen** → legt `sites/<name>/` + `dist/<name>/` an (Name slug-sicher normalisieren, z. B. `mslmdvlpmnt.com`) | **funktionsfähig** (Server + Seite + Verzeichnis-Setup getestet) |
 | 1a | UI-Grundlagen: weiße Seite, zentrierte `<section>` (Card) mit Beschreibung + Feldern, unten `#efefef`-Action-Bar mit Buttons | bestätigt 2026-10-01 |
-| 2 | **Quelle:** Base-URL + optional Sitemap-URL → Auto-Detect (`/sitemap.xml`, `/wp-sitemap.xml`, `/sitemap_index.xml`) → bei Index: Kinder auswählen → URLs nach `sites/<name>/data/urls.json` (mit Quelle je URL), State in `data/source.json` | **funktionsfähig** (getestet gegen lokalen Sitemap-Fixture) |
-| 3 | **Extraktion-Preview:** URL aus `urls.json` wählen (Select mit Optgroups je Sitemap) + Content-Selektor(e) kommagetrennt (leer = Auto: `.entry-content`, `article`, `main`, Schwellwert 200 Zeichen) → holt genau diese eine Seite → Meta (Title via og:title/<title>, Description, datePublished via JSON-LD) + Turndown-Markdown-Vorschau | **funktionsfähig** (getestet gegen lokalen Fixture) |
-| 4 | folgen — Voll-Lauf (alle URLs, sequenziell + Delay) nach User-Freigabe der Preview-Qualität | offen |
+| 2 | **Quelle:** Base-URL + optional Sitemap-URL → Auto-Detect (`/sitemap.xml`, `/wp-sitemap.xml`, `/sitemap_index.xml`) → bei Index: Kinder auswählen → URLs nach `sites/<name>/data/urls.json` (mit Quelle je URL), State in `data/source.json` | **funktionsfähig gegen Live-Site** (mslm: 106 URLs = 29 Posts + 12 Pages + 55 Projects + 10 Kategorien) |
+| 3 | **Extraktion-Preview:** URL wählen + Content-Selektor (site-weit in `data/config.json` persistiert, leer = Auto-Kette `.entry-content` → `.et_pb_post_content` → `article` → `main`, bester Treffer > 200 Zeichen) → holt genau diese eine Seite → Meta (Title, Description, datePublished via JSON-LD) + **sanitisiertes HTML in `<div class="article-content">`** (Preview gerendert + Quelle kopierbar). **Block-Labeling:** Top-Level-Blöcke per Hover-Dropdown klassifizieren (Heuristik-vorbefüllt), Regeln in `data/blocks.json`, site-weit per Original-Klassen-Fingerprint | **funktionsfähig gegen Live-Site** (Miswak-Post verifiziert: 29 Blöcke, 0 Divi-Reste, Label-Regeln greifen sofort seitenweit) |
+| 4 | folgen — Voll-Lauf (alle URLs, sequenziell + Delay) nach User-Freigabe der Preview-Qualität. **VORHER:** Jobs als Kindprozess härten (siehe Offene Punkte) | offen |
 
 ---
 
@@ -197,12 +197,13 @@ Lokaler Artikel-Editor, pro Site nutztbar (`sites/<name>/`). Wird **ausschließl
 
 ## OFFENE PUNKTE (iterativ füllen, jede Antwort → Entscheidungslog)
 
+- [ ] **Jobs als Kindprozess härten (VOR Schritt 4):** In-Process-Jobs starben still bei bun --hot-Reloads (Dev-Server-Prozess war nach vielen Reloads „vergiftet" — Symptom: Job hängt nach erstem Item, Stall-Detektor greift erst nach 60 s). Voll-Lauf muss als Child-Process laufen (`data/job.json` bleibt State), damit Hot-Reloads/Restarts ihn nicht killen
 - [ ] Wizard-Schritte im Detail (welche Infos wann, welche Freigaben wo)
 - [ ] Git: was wird committet? (Medien-Altbestand ist groß — Kandidat für gitignore; content/data?)
 - [ ] `dist/<name>/` gitignored (reproduzierbar per Build) — bestätigen
 - [ ] Output direkt nach `sites/<name>/` schreiben oder Zwischen-Workspace?
-- [ ] Config-Profil pro Site speichern/wiederverwenden? Format?
 - [ ] Composer-Loop: Auto-Build nach Speichern oder manuell?
+- [ ] Composer-Authoring bei HTML-Content-Layer: Markdown + `format: md|html`-Flag (angemerkt als Default, nicht final bestätigt)
 - [ ] Nostr Phase 2 (später): NIP-23/kind 30023? Relays? Key-Verwaltung? Wie landen Relay-Artikel im Build?
 
 ---
@@ -235,4 +236,6 @@ Commits: Englisch, kurzer One-Liner, keine Präfixe, keine KI-Signaturen.
 | 2026-10-01 | CSS-Prinzip: Selektoren nur bei Bedarf bauen — kein Vorrat |
 | 2026-10-01 | Dev-Live-Reload direkt im Bun-Server (`bun --hot` + `fs.watch` + `/__reload`-Poll-Script, nur im Dev-Modus) — kein Vite, der Wizard ist servergerendert |
 | 2026-10-01 | Wizard-State zustandslos über Dateien: `data/source.json` (Zwischenstand) + `data/urls.json` (URL-Liste mit Quell-Sitemap je URL) |
-| 2026-10-01 | Langlaufende Aktionen (Collect, später Crawl) laufen als In-Memory-Job mit Fortschrittsseite (Meta-Refresh 1,5 s, funktioniert ohne JS); Wizard-Flow = Post/Redirect/Get (jede Stufe hat GET-Route, refresh-sicher) |
+| 2026-10-01 | Langlaufende Aktionen (Collect, später Crawl) laufen als dateibackender Job (`data/job.json`) mit Fortschrittsseite — JS-Polling eines JSON-Status-Endpunkts (`GET .../jobs/<id>/status`) aktualisiert den Seiteninhalt; **kein Meta-Refresh** (User-Entscheid: Auto-Reloads sind inakzeptabel, Text muss kopierbar sein). Ohne JS: manueller Refresh-Link. Fehlgeschlagene Jobs rendern eine stehende Fehlerseite (Fehler im kopierbaren `<pre>`), statt weiterzuleiten. Wizard-Flow = Post/Redirect/Get (jede Stufe hat GET-Route, refresh-sicher) |
+| 2026-10-01 | **Content-Layer: HTML statt Markdown** (User-Entscheid). Artikelinhalt wird als DOM übernommen: sanitisiertes HTML in einem `<div class="article-content">` (Tag-Allowlist: p, h1–h6, Listen, a, img, figure/figcaption, blockquote, pre/code, strong/em, table …; `b→strong`, `i→em`; alle class/style/data-Attribute strippen; href/src absolutiert, nur http/https). Kein Turndown. WP-Export (`wp-export/*.xml`) enthält nur Divi-Shortcodes → taugt nicht als Content-Quelle; Design-Transfer später separat. Output-Contract `content/`: HTML + Frontmatter statt Markdown |
+| 2026-10-01 | **Block-Labeling** (User-Entscheid, kein KI-Einsatz): Top-Level-Blöcke des Containers werden in der Preview per Dropdown klassifiziert (article, meta-categories, meta-date, author-bio, comments, related-posts, share-buttons, newsletter, drop — Set erweiterbar). Fingerprint = Original-Klassen-Tokens (vor dem Strippen); Regeln in `data/blocks.json` gelten site-weit. Heuristik macht Vorschläge (category-Hrefs, comment/author-Klassen, kurzer Datumstext), User bestätigt per Klick. Voll-Lauf (Schritt 4): `drop`/`comments` → raus; `meta-*`/`author-bio` → Frontmatter |

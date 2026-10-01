@@ -19,6 +19,7 @@ import { createSiteDirs, saveJson, loadJson } from './wizard/sites';
 import { fetchSitemap, detectSitemap, type SitemapDoc } from './wizard/sitemap';
 import { fetchPage, extractPage } from './wizard/extract';
 import { createJob, persistJob, loadJob, type Job } from './wizard/jobs';
+import { BLOCK_LABELS, blockClasses, loadRules, matchLabel, saveRule, suggestLabel, type BlockLabel } from './wizard/blocks';
 
 const ROOT = path.resolve(import.meta.dir, '..');
 const PORT = Number(process.env.PORT ?? 4321);
@@ -77,6 +78,12 @@ function html(body: string, status = 200): Response {
   return new Response(content, { status, headers: { 'content-type': 'text/html; charset=utf-8' } });
 }
 
+function json(data: unknown): Response {
+  return new Response(JSON.stringify(data), {
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  });
+}
+
 function redirect(location: string): Response {
   return new Response(null, { status: 303, headers: { location } });
 }
@@ -119,6 +126,33 @@ interface UrlsState {
   generatedAt: string;
   total: number;
   urls: UrlEntry[];
+}
+
+interface PreviewState {
+  url: string;
+  selectors: string;
+  generatedAt: string;
+  result: {
+    url: string;
+    title: string;
+    description: string;
+    datePublished: string;
+    selectorUsed: string;
+    html: string;
+    blocks: Array<{ origClass: string; html: string }>;
+  };
+}
+
+// Vom User festgelegte Site-Parameter (Wizard-Schritt 3, gilt für alle Seiten).
+interface SiteConfig {
+  contentSelectors: string;
+}
+
+interface LabeledBlock {
+  origClass: string;
+  html: string;
+  current: string | null;
+  suggested: string;
 }
 
 function groupBySitemap(urls: UrlEntry[]): Array<{ source: string; urls: string[] }> {
@@ -173,6 +207,18 @@ async function runCollectJob(slug: string, baseUrl: string, sitemapUrl: string, 
   job.status = 'done';
   job.finishedAt = Date.now();
   await persistJob(job);
+}
+
+// Hängengebliebene Jobs (z. B. Server-Restart unter bun --hot killt den
+// laufenden Task) markieren — sonst pollt die Fortschrittsseite für immer.
+async function resolveJob(slug: string, job: Job): Promise<Job> {
+  if (job.status === 'running' && Date.now() - job.updatedAt > 60_000) {
+    job.status = 'done';
+    job.error = 'Job stalled — no progress for 60 s (server restart?). Go back and re-run.';
+    job.doneUrl = job.doneUrl ?? `/wizard/${slug}/source/select`;
+    await persistJob(job);
+  }
+  return job;
 }
 
 Bun.serve({
@@ -303,6 +349,21 @@ Bun.serve({
       return redirect(`/wizard/${slug}/jobs/${job.id}`);
     }
 
+    if (req.method === 'GET' && /^\/wizard\/[a-z0-9.-]+\/jobs\/[^/]+\/status$/.test(url.pathname) && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const id = url.pathname.split('/jobs/')[1]!.split('/')[0]!;
+      const job = await loadJob(slug);
+      if (!job || job.id !== id) return new Response('Not found', { status: 404 });
+      await resolveJob(slug, job);
+      return json({
+        id: job.id,
+        status: job.status,
+        error: job.error ?? null,
+        doneUrl: job.doneUrl ?? null,
+        items: job.items,
+      });
+    }
+
     if (req.method === 'GET' && url.pathname.includes('/jobs/') && slugFromPath(url.pathname)) {
       const slug = slugFromPath(url.pathname)!;
       const id = url.pathname.split('/jobs/')[1] ?? '';
@@ -313,14 +374,9 @@ Bun.serve({
         return redirect(hasUrls ? `/wizard/${slug}/extracted` : `/wizard/${slug}/source`);
       }
 
-      if (job.status === 'running' && Date.now() - job.updatedAt > 60_000) {
-        job.status = 'done';
-        job.error = 'Job stalled (no progress for 60 s).';
-        job.doneUrl = `/wizard/${slug}/source/select`;
-        await persistJob(job);
-      }
+      await resolveJob(slug, job);
 
-      if (job.status === 'done') {
+      if (job.status === 'done' && !job.error) {
         return redirect(job.doneUrl ?? `/wizard/${slug}/source`);
       }
       return html(jobPage(slug, job));
@@ -347,14 +403,56 @@ Bun.serve({
 
     // ---- Step 3: Extraction preview ----
 
+    if (req.method === 'POST' && url.pathname.endsWith('/label') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const form = await req.formData();
+      const target = String(form.get('url') ?? '');
+      const block = Number(form.get('block') ?? -1);
+      const origClass = String(form.get('origclass') ?? '');
+      const label = String(form.get('label') ?? '');
+      const base = validHttpUrl(target);
+      if (!base || block < 0 || !BLOCK_LABELS.includes(label as BlockLabel)) {
+        return html(sourceForm(slug, { error: 'Invalid block label request.' }), 400);
+      }
+      // Mit Original-Klassen: site-weite Regel (Fingerprint). Ohne: Einzelfall.
+      const match = blockClasses(origClass);
+      await saveRule(slug, {
+        match,
+        url: match.length ? undefined : base.href,
+        block: match.length ? undefined : block,
+        label: label as BlockLabel,
+      });
+      return redirect(`/wizard/${slug}/extract?url=${encodeURIComponent(base.href)}#preview`);
+    }
+
     if (req.method === 'GET' && url.pathname.endsWith('/extract') && !url.pathname.endsWith('/extracted') && slugFromPath(url.pathname)) {
       const slug = slugFromPath(url.pathname)!;
       const state = await loadJson<UrlsState>(slug, 'urls.json');
       if (!state) {
         return html(sourceForm(slug, { error: 'No URLs collected yet — run the source step first.' }), 400);
       }
-      const selectedUrl = url.searchParams.get('url') ?? state.urls[0]?.url ?? '';
-      return html(extractionForm(slug, { groups: groupBySitemap(state.urls), selectedUrl }));
+      const preview = await loadJson<PreviewState>(slug, 'preview.json');
+      const config = await loadJson<SiteConfig>(slug, 'config.json');
+      const selectedUrl = url.searchParams.get('url') ?? preview?.url ?? state.urls[0]?.url ?? '';
+      let labeledBlocks: LabeledBlock[] = [];
+      if (preview?.result.blocks?.length) {
+        const rules = await loadRules(slug);
+        labeledBlocks = preview.result.blocks.map((block, index) => {
+          const current = matchLabel(rules, block, preview.result.url, index);
+          return { ...block, current, suggested: current ?? suggestLabel(block) };
+        });
+      } else if (preview?.result) {
+        labeledBlocks = [{ ...preview.result, origClass: '', current: null, suggested: 'article' }];
+      }
+      return html(
+        extractionForm(slug, {
+          groups: groupBySitemap(state.urls),
+          selectedUrl,
+          selectors: config?.contentSelectors ?? '',
+          result: preview?.result,
+          labeledBlocks,
+        }),
+      );
     }
 
     if (req.method === 'POST' && url.pathname.endsWith('/extract') && !url.pathname.endsWith('/extracted') && slugFromPath(url.pathname)) {
@@ -373,10 +471,23 @@ Bun.serve({
         return html(extractionForm(slug, { groups, selectedUrl: target, selectors, error: 'Pick a URL from the list.' }), 400);
       }
 
+      // Der Selektor ist eine Site-Entscheidung — mit jedem Preview-POST
+      // gespeichert und später im Voll-Lauf für alle Seiten benutzt.
+      const existing = await loadJson<SiteConfig>(slug, 'config.json');
+      const config: SiteConfig = { ...existing, contentSelectors: selectors };
+      await saveJson(slug, 'config.json', config);
+
       try {
         const pageHtml = await fetchPage(target);
         const result = extractPage(pageHtml, target, selectors.split(','));
-        return html(extractionForm(slug, { groups, selectedUrl: target, selectors, result }));
+        const preview: PreviewState = {
+          url: target,
+          selectors,
+          result,
+          generatedAt: new Date().toISOString(),
+        };
+        await saveJson(slug, 'preview.json', preview);
+        return redirect(`/wizard/${slug}/extract?url=${encodeURIComponent(target)}#preview`);
       } catch (error) {
         return html(extractionForm(slug, { groups, selectedUrl: target, selectors, error: (error as Error).message }), 502);
       }

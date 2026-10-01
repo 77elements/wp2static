@@ -49,6 +49,74 @@
     margin-bottom: $gap;
   }
 
+  // Gerenderte Content-Preview: Basis-Typografie für den sanitisierten Artikel-Baum.
+  .article-content {
+    border: 1px solid $color-surface-muted;
+    padding: calc($gap / 2);
+    margin-bottom: $gap;
+    overflow-wrap: break-word;
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    blockquote {
+      border-left: 2px solid $color-surface-muted;
+      padding-left: calc($gap / 2);
+      margin-left: 0;
+    }
+
+    pre {
+      overflow-x: auto;
+    }
+  }
+
+  // Block-Labeling: Hover zeigt Grenze + Label-Bar; gelabelte Nicht-Artikel
+  // abgeblendet, aber sichtbar (Korrekturen brauchen den Kontext).
+  &__block {
+    position: relative;
+    outline: 1px dashed transparent;
+    padding: calc($gap / 4);
+
+    &:hover,
+    &:focus-within {
+      outline-color: $color-surface-muted;
+    }
+
+    &--nonarticle {
+      opacity: 0.4;
+    }
+  }
+
+  &__blocklabel {
+    position: absolute;
+    top: calc($gap / 4);
+    right: calc($gap / 4);
+    z-index: 1;
+    background: $color-white;
+    border: 1px solid $color-surface-muted;
+    padding: calc($gap / 4);
+    opacity: 0;
+    pointer-events: none;
+
+    form {
+      display: flex;
+      gap: calc($gap / 4);
+      align-items: center;
+    }
+
+    select {
+      font-size: $font-size-small;
+    }
+  }
+
+  &__block:hover &__blocklabel,
+  &__block:focus-within &__blocklabel {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   &__actions {
     padding: $gap;
     background: $color-surface-muted;
