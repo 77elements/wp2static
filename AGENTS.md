@@ -15,7 +15,7 @@ wp2static/
 └── dist/<name>/         # Fertige statische Website je Site (Build-Output, FTP-Quelle)
 ```
 
-- Converter-Output: `sites/<name>/content/` (Markdown + Frontmatter), `sites/<name>/public/` (Medien, pfaderhaltend — Alt-URLs dürfen nicht brechen), `sites/<name>/data/` (site.json: Navigation, Footer, Logo, Meta)
+- Converter-Output: `sites/<name>/content/` (HTML + Frontmatter), `sites/<name>/public/` (Medien, pfaderhaltend — Alt-URLs dürfen nicht brechen), `sites/<name>/data/` (site.json: Navigation, Footer, Logo, Meta)
 - Build-Output: `dist/<name>/` — das, was per FTP hochgeht
 - WP-REST-API ist unbrauchbar bei Page-Buildern (liefert Divi-Shortcodes unverarbeitet) → Scrape der gerenderten Frontend-Seiten
 
@@ -72,7 +72,7 @@ wp2static/
 ### 4. ARCHITECTURE ENFORCEMENT
 
 **Stack (fixed, no frameworks):**
-- **Backend:** Bun + TypeScript; cheerio (DOM), turndown (HTML→MD)
+- **Backend:** Bun + TypeScript; cheerio (DOM-Extraktion, Sanitizing)
 - **Frontend/Wizard/Composer:** plain HTML/CSS/TS, kein Framework
 - **Site-Build:** Template-Engine im `src/` (generisch), Templates pro Site unter `sites/<name>/templates/`, SCSS → CSS, Vanilla JS/TS (progressive enhancement — Seiten müssen ohne JS funktionieren)
 
@@ -159,40 +159,51 @@ Lokaler Artikel-Editor, pro Site nutztbar (`sites/<name>/`). Wird **ausschließl
 **Bestandsordner im Docroot (NICHT anfassen):** `ebook/`, `fiqh-of-social-media/`, `SearchInNpub/`, `ZapStar/`
 
 **Scrape-Erkenntnisse (getestet, nicht wiederholen):**
-- Content-Container: `article .et_pb_post_content` (Posts), `.entry-content` (Seiten, Fallback)
-- Meta: `<title>` (Suffix ` - [ mslm dvlpmnt ]` abschneiden), `meta[name=description]`, JSON-LD `datePublished`, `og:image`, Kategorien aus `a[href*="/category/"]` im Artikel
-- Post-Seiten: ~800 kB Divi-HTML (Inline-CSS) — cheerio/Turndown kommen damit klar
+- Divi Theme-Builder-Layouts (`.et-l--body`/`--header`/`--footer`) — Blöcke = `et_pb_module`s; kein `<article>`/`.entry-content` auf Posts
+- Meta: `og:title`/`<title>` (Suffix ` - [ mslm dvlpmnt ]` — wird beim Build abgeschnitten), `meta[name=description]`, JSON-LD `datePublished`
+- Post-Seiten: ~800 kB Divi-HTML (Inline-CSS) — cheerio kommt damit klar
 
 **Site-Entscheidungen:** Kontaktformular entfällt. Design deckungsgleich zum Divi-Ist-Zustand. Client-seitige Suche in JS am Ende. Neue Media-Uploads nach `/media/`.
 
 ---
 
-## WIZARD-FLOW (wird iterativ mit User konkretisiert)
+## WIZARD-FLOW (Schritte 1–4 umgesetzt; Details im Code: src/server.ts, src/wizard/*)
 
-| Schritt | Zweck | Status |
+**Umgesetzt:**
+
+| Schritt | Kurz | Status |
 |---|---|---|
-| 1 | **Website-Name abfragen** → legt `sites/<name>/` + `dist/<name>/` an (Name slug-sicher normalisieren, z. B. `mslmdvlpmnt.com`) | **funktionsfähig** (Server + Seite + Verzeichnis-Setup getestet) |
-| 1a | UI-Grundlagen: weiße Seite, zentrierte `<section>` (Card) mit Beschreibung + Feldern, unten `#efefef`-Action-Bar mit Buttons | bestätigt 2026-10-01 |
-| 2 | **Quelle:** Base-URL + optional Sitemap-URL → Auto-Detect (`/sitemap.xml`, `/wp-sitemap.xml`, `/sitemap_index.xml`) → bei Index: Kinder auswählen → URLs nach `sites/<name>/data/urls.json` (mit Quelle je URL), State in `data/source.json` | **funktionsfähig gegen Live-Site** (mslm: 106 URLs = 29 Posts + 12 Pages + 55 Projects + 10 Kategorien) |
-| 3 | **Extraktion-Preview:** URL wählen + Content-Selektor (site-weit in `data/config.json` persistiert, leer = Auto-Kette `.entry-content` → `.et_pb_post_content` → `article` → `main`, bester Treffer > 200 Zeichen) → holt genau diese eine Seite → Meta (Title, Description, datePublished via JSON-LD) + **sanitisiertes HTML in `<div class="article-content">`** (Preview gerendert + Quelle kopierbar). **Block-Labeling:** Top-Level-Blöcke per Hover-Dropdown klassifizieren (Heuristik-vorbefüllt), Regeln in `data/blocks.json`, site-weit per Original-Klassen-Fingerprint | **funktionsfähig gegen Live-Site** (Miswak-Post verifiziert: 29 Blöcke, 0 Divi-Reste, Label-Regeln greifen sofort seitenweit) |
-| 4 | folgen — Voll-Lauf (alle URLs, sequenziell + Delay) nach User-Freigabe der Preview-Qualität. **VORHER:** Jobs als Kindprozess härten (siehe Offene Punkte) | offen |
-| 3b | **Struktur:** Startseite einmal scannen → Hauptnavigation (erstes `<header>`/`<nav>`, Submenüs als Baum), Footer (letzter `<footer>`, gleicher Listen-Walk), Logo (erstes Header-Bild; **keins gefunden → `null`, explizites Ergebnis**) nach `data/site.json`. Findet die Auto-Erkennung nichts: optionale Container-Selektoren (Nav + Footer), site-weit in `config.json` persistiert | **funktionsfähig** (mslm: 7 Hauptmenü-Punkte, 7 Footer-Links, logo: null) |
+| 1 | Site-Name → `sites/<name>/` + `dist/<name>/` | ✅ |
+| 2 | Quelle: Base-URL + Sitemap-Auto-Detect → `data/urls.json` (mslm: 106 URLs) | ✅ |
+| 3 | Extract-Preview (1 Fetch) + **Block-Labeling** (Divi-Module als Blöcke, Heuristik-Vorschläge, Regeln site-weit in `data/blocks.json`; Labels: article, meta-\*, featured-image, author-bio, comments, related-posts, share-buttons, newsletter, drop) | ✅ |
+| 3b | Structure: Nav + Footer + Logo (1 Scrape) → `data/site.json`; Fallback-Selektoren in `config.json` | ✅ |
+| 4 | Voll-Lauf: Freigabe-Gate **pro Content-Gruppe** → Child-Process-Crawl (sequenziell, Delay, Raw-HTML-Cache, Retry, fail-soft) → `content/<typ>/<slug>.html` (HTML + Frontmatter: title, description, datePublished, author, categories, featuredImage) + RSS-Snapshot `data/rss.xml` | ✅ (mslm: 106/106) |
+
+**Offen:**
+
+| Schritt | Plan |
+|---|---|
+| 5 | **Build-Engine + Templates:** `content/` + `site.json` + `rss.xml` → `dist/<name>/`; URL-Contract 1:1; Templates erst funktional (BEM/Atomic), Design-Transfer separat; Title-Suffix beim Rendern abschneiden; RSS → `/blog/feed/index.xml` + `.htaccess`-301 für `/blog/rss` |
+| 6 | `check`: alle 106 mslm-URLs als 200 in `dist/` |
+| — | Medien-Download (`/wp-content/uploads/` pfaderhaltend nach `public/`) — **vor Cutover**, Live-Links gelten bis dahin |
+| — | Archiv-Pagination — optional vor Build-Generierung |
 
 ---
 
-## ROADMAP (Converter zuerst — iterativ gegen mslm verifizieren)
+## ROADMAP (Stand 2026-10-06)
 
-1. Wizard-Gerüst: lokaler Bun-Server + Schritt-UI (Flow, Progress, Freigaben)
-2. Schritt "Quelle": baseUrl + Sitemap-URLs → Sitemap-Loader (inkl. Index) → URL-Liste
-3. Schritt "Extraktion": Selektoren testen, Stichproben als Markdown-Preview → User-Freigabe
-4. Schritt "Konversion": Voll-Lauf mit Progress (sequenziell, Delay, Cache, Retry) → `sites/mslmdvlpmnt.com/{content,public,data}`
-5. Build-Engine + Templates: `sites/<name>/` → `dist/<name>/` inkl. RSS (`/blog/feed/index.xml`) + `.htaccess`-Snippets
-6. `check`: alle ~105 mslm-URLs als 200 in `dist/`
+1. ✅ Wizard-Gerüst: lokaler Bun-Server + Schritt-UI (Flow, Progress, Freigaben)
+2. ✅ Schritt "Quelle": Sitemap-Loader (inkl. Index) → URL-Liste
+3. ✅ Schritt "Extraktion": Preview + Block-Labeling (HTML-Content-Layer)
+4. ✅ Schritt "Konversion": Voll-Lauf (Child-Process, Gate, Cache) → `content/` + RSS-Snapshot
+5. ⏭ **Build-Engine + Templates** (nächster Schritt): `sites/<name>/{content,data}` + Templates → `dist/<name>/`; URL-Contract 1:1; Globals (Nav/Footer/Logo) aus `site.json`; RSS → `/blog/feed/index.xml` + `.htaccess`-301; Title-Suffix abschneiden
+6. `check`: alle 106 mslm-URLs als 200 in `dist/`
 7. Design-Transfer mit User (Divi-nah; Design = "eigene Abteilung", eigener Zeitslot)
 8. Composer MVP (lokal): Editor + Kategorien + Media-Upload + Nav-/Portal-Platzierung
 9. Composer Phase 2: Nostr-Relays
 10. Client-seitige Suche (JS)
-11. Cutover mslm am Server (nur auf User-Anweisung)
+11. Medien-Download (`/wp-content/uploads/` → `public/`, pfaderhaltend) — vor Cutover
+12. Cutover mslm am Server (nur auf User-Anweisung)
 
 ---
 
@@ -211,15 +222,16 @@ wp2static wird auf 20–30+ bestehende WordPress-Sites angewendet — Divi (mslm
 
 ## OFFENE PUNKTE (iterativ füllen, jede Antwort → Entscheidungslog)
 
-- [ ] **Jobs als Kindprozess härten (VOR Schritt 4):** In-Process-Jobs starben still bei bun --hot-Reloads (Dev-Server-Prozess war nach vielen Reloads „vergiftet" — Symptom: Job hängt nach erstem Item, Stall-Detektor greift erst nach 60 s). Voll-Lauf muss als Child-Process laufen (`data/job.json` bleibt State), damit Hot-Reloads/Restarts ihn nicht killen
-- [ ] Wizard-Schritte im Detail (welche Infos wann, welche Freigaben wo)
-- [ ] Git: was wird committet? (Medien-Altbestand ist groß — Kandidat für gitignore; content/data?)
+- [x] **Jobs als Kindprozess härten:** Voll-Lauf läuft als Child-Process, detached; Zustand nur über `data/job.json`; Stall-Detektor 180 s (Details: `src/wizard/crawl-job.ts`, `src/wizard/crawl.ts`)
+- [x] Wizard-Schritte im Detail: Schritte 1–4 stehen (inkl. Freigabe-Gate pro Content-Gruppe)
+- [x] Output-Ort: direkt nach `sites/<name>/` (`content/`, `cache/`, `data/`) — kein Zwischen-Workspace
+- [ ] Git: was wird committet? (content/data ja; `cache/` und Medien-Altbestand als Kandidaten für gitignore)
 - [ ] `dist/<name>/` gitignored (reproduzierbar per Build) — bestätigen
-- [ ] Output direkt nach `sites/<name>/` schreiben oder Zwischen-Workspace?
 - [ ] Composer-Loop: Auto-Build nach Speichern oder manuell?
 - [ ] Composer-Authoring bei HTML-Content-Layer: Markdown + `format: md|html`-Flag (angemerkt als Default, nicht final bestätigt)
 - [ ] Nostr Phase 2 (später): NIP-23/kind 30023? Relays? Key-Verwaltung? Wie landen Relay-Artikel im Build?
 - [ ] Erkennungs-Architektur: Ablageort promoteter Cross-Site-Regeln (committed im Repo vs. nur lokal) — ab Site #2 entscheiden
+- [ ] Build: Archiv-Pagination (optional), Title-Suffix-Handling, `.htaccess`-Snippets — mit Schritt 5 klären
 
 ---
 
@@ -254,9 +266,10 @@ Commits: Englisch, kurzer One-Liner, keine Präfixe, keine KI-Signaturen.
 | 2026-10-01 | Langlaufende Aktionen (Collect, später Crawl) laufen als dateibackender Job (`data/job.json`) mit Fortschrittsseite — JS-Polling eines JSON-Status-Endpunkts (`GET .../jobs/<id>/status`) aktualisiert den Seiteninhalt; **kein Meta-Refresh** (User-Entscheid: Auto-Reloads sind inakzeptabel, Text muss kopierbar sein). Ohne JS: manueller Refresh-Link. Fehlgeschlagene Jobs rendern eine stehende Fehlerseite (Fehler im kopierbaren `<pre>`), statt weiterzuleiten. Wizard-Flow = Post/Redirect/Get (jede Stufe hat GET-Route, refresh-sicher) |
 | 2026-10-01 | **Content-Layer: HTML statt Markdown** (User-Entscheid). Artikelinhalt wird als DOM übernommen: sanitisiertes HTML in einem `<div class="article-content">` (Tag-Allowlist: p, h1–h6, Listen, a, img, figure/figcaption, blockquote, pre/code, strong/em, table …; `b→strong`, `i→em`; alle class/style/data-Attribute strippen; href/src absolutiert, nur http/https). Kein Turndown. WP-Export (`wp-export/*.xml`) enthält nur Divi-Shortcodes → taugt nicht als Content-Quelle; Design-Transfer später separat. Output-Contract `content/`: HTML + Frontmatter statt Markdown |
 | 2026-10-01 | **Block-Labeling** (User-Entscheid, kein KI-Einsatz): Top-Level-Blöcke des Containers werden in der Preview per Dropdown klassifiziert (article, meta-categories, meta-date, author-bio, comments, related-posts, share-buttons, newsletter, drop — Set erweiterbar). Fingerprint = Original-Klassen-Tokens (vor dem Strippen); Regeln in `data/blocks.json` gelten site-weit. Heuristik macht Vorschläge (category-Hrefs, comment/author-Klassen, kurzer Datumstext), User bestätigt per Klick. Voll-Lauf (Schritt 4): `drop`/`comments` → raus; `meta-*`/`author-bio` → Frontmatter |
-| 2026-10-06 | **Block-Quelle bedingungsweise Divi-Module** (User-Entscheid: Converter bleibt Theme-generisch): Nur wenn Divi erkannt ist (`.et_pb_module` im Body-Bereich, z. B. Theme-Builder-Layout `.et-l--body`), sind die Top-Level-Module die Blöcke — dort liegen Titel/Autor/Meta/Kommentare als eigene Module NEBEN dem Content-Container. Ohne Divi wie bisher: Top-Level-Kinder des Content-Containers. Heuristik erweitert: post-nav → related-posts, „Written by" → author-bio, Titel-Block & „No Results Found"-Junk → drop |
-| 2026-10-06 | **Label = Region, Blöcke gleicher Labels werden in Dokument-Reihenfolge zu EINEM Bereich zusammengefügt** (User-Frage, entschieden): z. B. 3 Blöcke auf `comments` → ein Kommentarbereich; mehrere `article`-Blöcke → ein `<div class="article-content">`; `meta-*`/`author-bio`-Gruppe → Frontmatter-Extraktion über alle Blöcke des Labels; `drop` → alle raus. Wirksam im Voll-Lauf (Schritt 4) |
-| 2026-10-06 | Label `meta-comments` ergänzt (Kommentar-Anker/Count, z. B. Divi-Blurb „Comments: 0" → `#respond`; Heuristik `^Comments:` bei Text < 60 Zeichen). Icon-Font-Glyphen (Unicode Private Use) werden vor der Text-Heuristik entfernt — sonst verhindert das unsichtbare Divi-Icon den Wortanfang-Match |
+| 2026-10-06 | **Block-Quelle: Divi-Module wenn Divi erkannt** (Theme-generisch bleiben): `.et_pb_module` im Body → Top-Level-Module sind die Blöcke (Titel/Autor/Meta/Kommentare liegen NEBEN dem Content-Container); ohne Divi Container-Kinder. Divi-Seiten ohne passenden Container failen nicht mehr hart — Module genügen als Block-Quelle |
+| 2026-10-06 | **Label = Region:** Blöcke gleichen Labels werden in Dokument-Reihenfolge zu EINEM Bereich zusammengefügt (3× comments → ein Kommentarbereich; article-Blöcke → ein `article-content`; meta-\*/author-bio → Frontmatter; drop → raus) |
+| 2026-10-06 | Label-Set erweitert: `meta-comments` (Kommentar-Anker/Count), `featured-image` (Cover; Nur-Bild-Block mit Image-Klasse → `featuredImage: {src, alt}` im Frontmatter, raus aus dem Content). Icon-Font-Glyphen (Unicode Private Use) werden vor der Text-Heuristik entfernt |
 | 2026-10-06 | **Erkennungs-Architektur festgelegt** (User-Entscheid): keine strikten Site-Profile — score-basierte Musterbibliothek pro Bereich (Segmentierung per Builder-Registry, normalisierte Klassen-Tokens, Feature-Matching mit Gewichten, Site-Regeln schlagen Bibliothek, Cross-Site-Promotion; KI später nur als Vorschlagsquelle unter Score-Schwelle). Zielbild + Migrationspfad: Abschnitt „Erkennungs-Architektur" |
-| 2026-10-06 | **Wizard-Schritt 3b „Structure"**: Sitemaps enthalten keine Navigation (kein Menü-Membership, keine Reihenfolge/Hierarchie/Labels) → Startseite wird einmal gescannt, aus erstem `<header>`/`<nav>` per generischem ul/ol-li-Walk die Hauptnavigation extrahiert (generisch, keine Builder-Klassen) und in `data/site.json` gespeichert (baseUrl, scannedFrom/At, navigation: NavItem-Baum). Footer/Logo/Meta folgen später in dieselbe Datei |
-| 2026-10-06 | **Struktur erweitert (Footer, Logo, Selektor-Fallback)**: `site.json` um `footer` (letzter `<footer>`, gleicher Walk; fail-soft → `null`) und `logo` (erstes Header-Bild; **keins vorhanden → `null` ist das korrekte Ergebnis**, mslm hat kein Logo — Divi `et_pb_menu--without-logo`). Auto-Erkennung schlägt fehl → optionale Container-Selektoren (Nav/Footer), site-weit in `config.json` (`navSelector`, `footerSelector`), analog `contentSelectors`. Ein Scrape deckt Nav + Footer + Logo |
+| 2026-10-06 | **Schritt 3b „Structure"**: Sitemaps enthalten keine Navigation → Startseite 1× scannen: Nav (erstes `<header>`/`<nav>`, ul/ol-li-Walk), Footer (letzter `<footer>`), Logo (erstes Header-Bild; keins → `null` ist korrekt) → `data/site.json`; Fallback-Selektoren site-weit in `config.json` |
+| 2026-10-06 | **Voll-Lauf-Umfang (User):** mslm nimmt ALLE 106 URLs mit (Posts/Pages/Projects/Kategorien; Tool-Fokus zuerst WP-Haus-Typen). Freigabe **pro Content-Gruppe**. Medien-Download deferred (Live-Links bis Cutover). RSS = 1:1 statischer Snapshot. Archiv-Pagination optional vor Build |
+| 2026-10-06 | **Schritt 4 umgesetzt:** Crawl als detached Child-Process (Zustand nur in `data/job.json`, Spawn-stderr → `data/crawl.log`, Stall-Detektor 180 s + Fallback-Redirect), Freigabe-Gate `/run` (`run.json`, `previews.json`), Raw-HTML-Cache, Retry+Backoff, Output `content/<typ>/<slug>.html` mit YAML-Frontmatter (author aus „Written by:"-Heading, categories aus `/category/`-Ankern), Dry-Run per `limit`-Arg. UI reagiert auf Stillstand (Warnung ab 60 s, ehrliche „Run incomplete"-Zusammenfassung) |

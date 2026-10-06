@@ -177,33 +177,36 @@ export function extractPage(html: string, url: string, selectors: string[]): Ext
   let selectorUsed = '';
   let container: cheerio.AnyNode | null = null;
 
-  for (const selector of candidates) {
-    // Page-Builder-Seiten enthalten oft mehrere Fragmente eines Selektors —
-    // der erste Treffer ist nicht der Inhaltsreiche. Bester gewinnt.
-    let best: { node: cheerio.AnyNode; length: number } | null = null;
-    $(selector).each((_, el) => {
-      const length = $(el).text().trim().length;
-      if (!best || length > best.length) best = { node: el, length };
-    });
-    if (best && best.length > MIN_CONTENT_LENGTH) {
-      selectorUsed = selector;
-      container = best.node;
-      break;
-    }
-  }
-
-  if (!container || !selectorUsed) {
-    throw new Error(`No content found (tried: ${candidates.join(', ')})`);
-  }
-
-  // Block-Quelle — Divi erkannt (Module im Body-Bereich)? Dann sind die
-  // Top-Level-Module die Blöcke (Dokument-Reihenfolge): Meta, Autor und
-  // Kommentare liegen bei Theme-Builder-Layouts als eigene Module NEBEN dem
-  // Content-Container und wären sonst nicht labelbar. Ohne Divi: wie bisher
-  // die Top-Level-Kinder des Containers (normale WordPress-Sites).
-  // Original-Klassen werden VOR dem Strippen gesichert (Fingerprint fürs
-  // Block-Labeling), dann wird jeder Block einzeln bereinigt.
+  // Divi erkannt? Dann sind die Module die Block-Quelle und ein Content-
+  // Container ist nicht nötig — viele Builder-Seiten (Projects, Landingpages,
+  // Archive) haben keinen passenden Container und dürfen hier nicht hart failen.
   const diviModules = findDiviModules($);
+  if (!diviModules.length) {
+    for (const selector of candidates) {
+      // Page-Builder-Seiten enthalten oft mehrere Fragmente eines Selektors —
+      // der erste Treffer ist nicht der Inhaltsreiche. Bester gewinnt.
+      let best: { node: cheerio.AnyNode; length: number } | null = null;
+      $(selector).each((_, el) => {
+        const length = $(el).text().trim().length;
+        if (!best || length > best.length) best = { node: el, length };
+      });
+      if (best && best.length > MIN_CONTENT_LENGTH) {
+        selectorUsed = selector;
+        container = best.node;
+        break;
+      }
+    }
+    if (!container || !selectorUsed) {
+      throw new Error(`No content found (tried: ${candidates.join(', ')})`);
+    }
+  } else {
+    selectorUsed = '(page-builder modules)';
+  }
+
+  // Block-Quelle — bei Divi die Top-Level-Module (Dokument-Reihenfolge), so
+  // sind Meta, Autor und Kommentare labelbar; ohne Divi die Top-Level-Kinder
+  // des Containers. Original-Klassen werden VOR dem Strippen gesichert
+  // (Fingerprint fürs Block-Labeling), dann wird jeder Block einzeln bereinigt.
   const sources = diviModules.length
     ? diviModules
     : [...(container as { children: cheerio.AnyNode[] }).children];

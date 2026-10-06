@@ -58,12 +58,16 @@ if (progress && list && progress.dataset.running === 'true') {
 
   const render = (job: {
     status: string;
+    updatedAt?: number;
     error?: string | null;
     doneUrl?: string | null;
     items: Array<{ label: string; status: string; count?: number; error?: string }>;
   }): void => {
     const done = job.items.filter((i) => i.status === 'done' || i.status === 'failed').length;
-    progress.textContent = `Processed ${done} of ${job.items.length} — updates automatically.`;
+    const stale = job.updatedAt !== undefined && Date.now() - job.updatedAt > 60_000;
+    progress.textContent =
+      `Processed ${done} of ${job.items.length} — updates automatically.` +
+      (stale ? ' No progress for over a minute — if this persists after a reload, restart from the Full run page.' : '');
     list.innerHTML = job.items
       .map((i) => {
         const error = i.error ? ` (${escapeHtml(i.error)})` : '';

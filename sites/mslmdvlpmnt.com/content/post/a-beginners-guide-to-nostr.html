@@ -1,0 +1,454 @@
+---
+type: post
+title: "A Beginner's Guide to Nostr - [ mslm dvlpmnt ]"
+description: "The purpose of this article is to quickly onboard people onto Nostr without delving too deep into technical aspects. It explains the essentials for Nostr beginners."
+datePublished: "2023-11-29T07:41:02+00:00"
+author: "Alp Uçkan"
+featuredImage:
+  src: "https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-cover-jpg.webp"
+  alt: "The Nostr Landscape"
+categories:
+  - name: "Social Media"
+    href: "https://mslmdvlpmnt.com/category/social-media/"
+source: "https://mslmdvlpmnt.com/a-beginners-guide-to-nostr/"
+---
+<div class="article-content">
+
+				
+				
+				
+				
+				<h2>A Beginner’s Guide to Nostr</h2>
+			
+
+				
+				
+				
+				
+				
+
+<p>This article is outdated. Please read the newer version at <a href="https://mslmdvlpmnt.com/a-beginners-guide-to-nostr-2025/">A Beginner’s Guide to Nostr 2025</a></p>
+
+
+
+
+<p>The purpose of this article is to quickly onboard people onto Nostr without delving too deep into technical aspects. So, don’t expect completeness or depth. I’ll explain the essentials for Nostr beginners. You can gradually learn more over time, بإذن الله. </p>
+
+
+
+<h2>Why Nostr?</h2>
+
+
+
+<p>Firstly, you should be aware of Nostr’s differences compared to conventional commercial social media platforms (hereafter referred to as <em>Fiat-Social-Media</em> or <em>FSM</em>).</p>
+
+
+
+<p><a href="https://nostr.com/">Nostr</a> (“Notes and Other Stuff Transmitted by Relays”) is merely an open technical protocol responsible for circulating your posts (“notes”) in a decentralized manner using <em>relays</em>. It doesn’t include a graphical user interface (GUI). Clients that have a GUI need to be developed separately, and there are already many of them in the market. So, you’ll find various Nostr GUIs and they all operate based on the Nostr protocol. This means, regardless of which client you use or which clients others use, everyone can read and interact with anyone’s posts through the Nostr protocol. This is unlike FSM platforms like Twitter, where the protocol layer and the (solely company-dictated) user interface are integrated.</p>
+
+
+
+<p>Therefore, don’t be confused by different user interfaces (or clients) for mobile or desktop browsers. In the end, it’s all Nostr.</p>
+
+
+
+<figure><a href="https://mslmdvlpmnt.com/wp-content/uploads/2023/12/nostr-illustration.jpeg"><img width="1024" height="768" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/12/nostr-illustration-1024x768.jpeg" alt="Nostr network, illustrated"></a><figcaption>Nostr illustration by @<a href="https://primal.net/p/npub1e4qg56wvd3ehegd8dm7rlgj8cm998myq0ah8e9t5zeqkg7t7s93q750p76">awayuki</a>, source: @<a href="https://primal.net/e/note1hzc8ez6lz7em2et03strr3kn5x4nnvhhtpwv3ueqnq95wuz8zk9sx6eh7z">fiatjaf</a></figcaption></figure>
+
+
+
+<h2>Key Features of Nostr</h2>
+
+
+
+<h3>No Ownership</h3>
+
+
+
+<p>Nostr belongs to no company or individual seeking a profitable business model. Currently, the protocol and clients are provided voluntarily and for free by open-source developers to all users. While open-source developers need to make a living too, they typically pursue different business models, such as founding their own company to support their open-source tools or customizing these products in the corporate environment, as Canonical, the maker of Ubuntu, does. They rarely inundate users with ads, take money from them, or sell their data. This leads to several other noteworthy features of the Nostr ecosystem.</p>
+
+
+
+<h3>No Ads, No Big Data Collection</h3>
+
+
+
+<p>So, no advertising. No dancing to the tune of advertising clients. Therefore, users and their content are not the product, as is the case with FSM. Big data is not a concern; your data is not collected centrally and sold to eager advertising companies. However, this doesn’t mean some third party won’t build a bot to scrape all publicly accessible accounts and data and cause mischief. At least there is no central provider who does it.</p>
+
+
+
+<h3>No Algorithms</h3>
+
+
+
+<p>Since there’s no urgent need to generate profits with the product itself, there’s no incentive to build an algorithm that aggressively boosts the visibility of paying ‘Premium’ customers or increases general engagement through controversial content at all costs. Less drama, less depressing content. It simply doesn’t pay off on Nostr. People want to feel good and be constructive, which is predominantly the case on Nostr.</p>
+
+
+
+<h3>Uncensorability</h3>
+
+
+
+<p>No one can delete your notes; no one can manipulate your reach through shadow bans, censor your posts, or expel you from the network. No one has the necessary access rights to your account or your posts. Only you have them with your password or ‘private key’. So, guard your private key!</p>
+
+
+
+<p>However, don’t feel completely immune; your posts are publicly readable, and in the real world, local law enforcement still exist, and your IP address is recorded with each note. This happens at the protocol level, not by an operator, which – again – doesn’t exist. But you can easily conseil your IP address by using a VPN.</p>
+
+
+
+<h3>Google Juice</h3>
+
+
+
+<p>Marketing people who have read this far will say “Mehh,” but there’s something for them on Nostr too. For people running their own web presence with their own domain and website, note that all Nostr clients create clean Dofollow links. Google Juice, if you know what I mean.</p>
+
+
+
+<h3>Zapps!</h3>
+
+
+
+<p>Oh, I almost forgot. Nostr has a built-in reward feature called zapping. You can not only like or share posts but also send them real Satoshis if you like them. That’s in fact, the real innovation of Nostr. Direct content economy without intermediaries with the soundest currency we’ve had in the last 50 years. Sats are sent via the Bitcoin Lightning protocol. So as a new Nostr user, you should get a Lightning address right away. But it’s not mandatory. However, zapping and being zapped are fun, even if they’re usually small amounts. It’s an expression of honest appreciation. And small amounts add up, plus the value of these Sats increases in the long run. So, stack them over time or withdraw them for a coffee if you want.</p>
+
+
+
+<h2>Let’s move on to the setup. Ready?</h2>
+
+
+
+<p>For the sake of this beginner’s article, I’ll pick what I currently consider the best clients for you to start. Once you understand the general principles, you can change your Nostr client (or Nostr GUI) or your Lightning address anytime without losing your notes. They all essentially work on the same principle, just with different interfaces and minor functional differences.</p>
+
+
+
+<p>We’ll choose the technical stack Primal and Alby for zappability. I’ll first explain the setup on a desktop computer in the browser and then on the mobile phone.</p>
+
+
+
+<h3>On the Computer</h3>
+
+
+
+<p>1. In your browser, visit the website <a href="https://primal.net/">https://primal.net/</a> and click on ‘Get Started’ and ‘Create Account.’</p>
+
+
+
+<figure><img width="1023" height="689" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-01.png" alt="Screenshot"></figure>
+
+
+
+<p>2. Choose a username and display name. You can also upload a logo and banner at this time, but you can do that later as well.</p>
+
+
+
+<figure><img width="852" height="744" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-02.png" alt="Screenshot"></figure>
+
+
+
+<p>3. If you have a website, enter it. As mentioned earlier, it’s a Dofollow link, so it inherits page rank. The important fields are ‘Lightning Address’ for zapping and being zapped and the NIP-05 verification (similar to the former version of the Blue Checkmark on Twitter). If you have a Lightning address, enter it. If not, we’ll come back to that later.</p>
+
+
+
+<figure><img width="836" height="932" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-03.png" alt="Screenshot"></figure>
+
+
+
+<p>4. You’ll then see some famous Nostr superstars that you can follow to avoid an empty timeline from the start. If you don’t want to, unfollow individually or all of them by clicking ‘Unfollow (all).’ Click ‘Finish’ afterward.</p>
+
+
+
+<figure><img width="842" height="873" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-04.png" alt="Screenshot"></figure>
+
+
+
+<p>5. You’ll be prompted to create a PIN. Normally, with most other clients, you would need to enter your private key to log in. The PIN in Primal makes logging in easier. It’s not necessary (you can skip setting a PIN), but you can set one if you want.</p>
+
+
+
+<figure><img width="624" height="595" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-05.png" alt="Screenshot"></figure>
+
+
+
+<p>6. Once the PIN is set, you’re logged in. You can post notes, and you’ll see your logo, indicating you’re logged in and ready to start posting.</p>
+
+
+
+<figure><img width="1024" height="809" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-06-1024x809.png" alt="Screenshot"></figure>
+
+
+
+<p>7. But there’s still something important we need to take care of, as indicated in the settings. Click on <em>Settings</em>, then <em>Account</em>…</p>
+
+
+
+<figure><img width="1024" height="678" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-07-1024x678.png" alt="Screenshot"></figure>
+
+
+
+<p>8. …and you’ll see your <em>Public</em> and <em>Private Key</em>. Copy both and save them in your password manager. Your Public Key is like your login name, and your private key is like your password. But be careful, there are no password recovery methods. If you lose your Private Key, you permanently lose access to your account!</p>
+
+
+
+<figure><img width="1024" height="538" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-08-1024x538.png" alt="Screenshot"></figure>
+
+
+
+<p>You can use this private key directly to log in to other Nostr clients; you don’t need to enter the Public Key. <br>Cool feature, by the way: You can also log in with your Public Key, but then you can only read, not post anything new. You can also log in with the PubKey of anyone else. You’ll see their timeline, consisting of the notes of all the people they follow, but you can’t post in their name.</p>
+
+
+
+<p>As mentioned, you can log in with your private key on most Nostr clients. However, it’s not good practice to do this with web clients because you never know where this Private Key is stored. It should be stored in your browser’s local storage correctly. You have to trust the client site and the developer for this because, during login, they could simply send your private key to their server without your knowledge, giving them access to your account.</p>
+
+
+
+<p>For this reason, there are browser add-ons that handle the login to Nostr-based services for you and ensure that this key is never transferred to a server. <a href="https://chromewebstore.google.com/detail/nos2x/kpgefcfmnafjgpblomihpgmejjdanjjp">Nos2x</a> is a very simple one, for example.</p>
+
+
+
+<p>Since we also want to give you a Lightning address so that you can zap and be zapped on Nostr, let’s use <a href="https://getalby.com/">Alby</a>. It provides both, a Lightning address and Nostr login management similar to nos2x.</p>
+
+
+
+<p>9. Create an account there first.</p>
+
+
+
+<figure><img width="1024" height="511" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-09-1024x511.png" alt="Screenshot"></figure>
+
+
+
+<p>10. Enter an email address and sign up.</p>
+
+
+
+<figure><img width="689" height="457" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-10.png" alt="Screenshot"></figure>
+
+
+
+<p>11. You’ll receive a one-time login code, and you’re in your dashboard.</p>
+
+
+
+<figure><img width="1024" height="682" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-11-1024x682.png" alt="Screenshot"></figure>
+
+
+
+<p>12. Let’s create your Lightning address there, so you can receive Sats. Go to ‘Settings’ and then ‘Profile Settings.’</p>
+
+
+
+<figure><img width="1024" height="686" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-12-1024x686.png" alt="Screenshot"></figure>
+
+
+
+<p>13. Choose a Lightning address. Enter your name as well. If you want address verification, enter your Nostr Public Key (short: npub) there.</p>
+
+
+
+<figure><img width="1024" height="840" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-13-1024x840.png" alt="Screenshot"></figure>
+
+
+
+<p>14. Now you have a Lightning page where people can send you Sats to. Copy your new Lightning address from there. In my case, it would be mslmdvlpmnt@getalby.com.</p>
+
+
+
+<figure><img width="484" height="695" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-14.png" alt="Screenshot"></figure>
+
+
+
+<p>15. Go back to Primal, click on your profile, and then ‘edit profile.’</p>
+
+
+
+<figure><img width="841" height="942" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-15.png" alt="Screenshot"></figure>
+
+
+
+<p>16. Enter your copied Lightning address and also your NIP-05 verification if you’ve set it up with Alby. Save it.</p>
+
+
+
+<figure><img width="903" height="905" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-16.png" alt="Screenshot"></figure>
+
+
+
+<p>17. When you post your first note, you’ll see the Lightning icon, indicating that people can now zap your notes.</p>
+
+
+
+<figure><img width="698" height="706" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-17.png" alt="Screenshot"></figure>
+
+
+
+<p>18. Go back to getalby.com. Let’s install the browser extension.</p>
+
+
+
+<figure><img width="1024" height="460" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-18-1024x460.png" alt="Screenshot"></figure>
+
+
+
+<p>19. After installing this extension, set a passcode to unlock it. This is not the password for your getalby.com account; it’s to unlock the Alby functionality locally in your browser. Don’t confuse them.</p>
+
+
+
+<figure><img width="629" height="769" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-19.png" alt="Screenshot"></figure>
+
+
+
+<p>20. Connect your extension with your getalby account.</p>
+
+
+
+<figure><img width="1024" height="611" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-20-1024x611.png" alt="Screenshot"></figure>
+
+
+
+<p>21. Change your display name if you want and then click on Nostr Settings.</p>
+
+
+
+<figure><img width="1024" height="760" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-21-1024x760.png" alt="Screenshot"></figure>
+
+
+
+<p>22. Enter your Nostr Private Key there and save it.</p>
+
+
+
+<figure><img width="653" height="572" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-22.png" alt="Screenshot"></figure>
+
+
+
+<p>23. From now on, your private key is stored in your browser and Alby can handle your Nostr login.</p>
+
+
+
+<figure><img width="1024" height="490" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-23-1024x490.png" alt="Screenshot"></figure>
+
+
+
+<p>24. Let’s test it. Go to another Nostr client website, e.g., <a href="https://snort.social/">Snort</a>. The Alby browser extension recognizes that it’s a Nostr application and asks for permission. Click <em>Allow</em> in the following dialogs, and you’re logged into Snort. For some clients, like <a href="https://coracle.social/">Coracle</a>, you may need to click ‘Login’ first.</p>
+
+
+
+<figure><img width="468" height="699" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-24.png" alt="Screenshot"></figure>
+
+
+
+<h3>On the Mobile Phone</h3>
+
+
+
+<p>1. To use Primal on your phone, open <a href="https://primal.net/downloads">https://primal.net/downloads</a> on your mobile browser (Chrome or Safari) and download the appropriate app to your phone.</p>
+
+
+
+<figure><img width="596" height="1024" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-25-596x1024.png" alt="Screenshot"></figure>
+
+
+
+<p>2. From there, the setup is similar to the desktop browser. The only difference is that if you want to log in with an existing account, you don’t have a browser add-on like Getalby available to handle the login with your private pey. You have to either copy &amp; paste the private key or manually enter it.</p>
+
+
+
+<p><strong>Update 30/11/2023</strong>: Actually there is a phone app that can manage private key logins to Nostr apps: <a href="https://spring.site/">Spring</a>. But I haven’t tried it yet.</p>
+
+
+
+<p><strong>Update 02/12/2023</strong>: Now the IOs version of Primal comes with an own Lightning payment feature integrated and you can top up your Lightning address via Apple Pay. <a href="https://primal.net/e/note15hqxfa0h65dhtg5adn2qh64xpcyf2x0e24nzx6kn0yqk0spdepaq9ma458">See note</a>.</p>
+
+
+
+
+
+<figure><img width="596" height="1024" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-26-596x1024.png" alt="Screenshot"></figure>
+
+
+
+
+
+<figure><img width="594" height="1024" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-26b-594x1024.png" alt="Screenshot"></figure>
+
+
+
+
+
+<h2>Using Getalby Lightning Address on your Phone</h2>
+
+
+
+<p>Getalby is currently exclusively a desktop-only application, even though a mobile app version has been announced by the manufacturer. However, until that happens, you can do the following:</p>
+
+
+
+<p>1. For Android systems, download the Lightning app ‘BlueWallet’ to your phone.</p>
+
+
+
+<p>2. In BlueWallet, choose ‘Add Wallet’ and then ‘Lightning.’ To connect your existing Alby Lightning address, you need its LNDHub address. You can find your Lightning address’ LNDHub info on <a href="https://getalby.com/node">https://getalby.com/node</a>, then click on ‘Show your connection credentials.’ Copy the LNDHub connection address and paste it into the corresponding field in BlueWallet.</p>
+
+
+
+<figure><img width="1024" height="913" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-27-1024x913.png" alt="Screenshot"></figure>
+
+
+
+<figure><img width="599" height="1024" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-howto-28-1-599x1024.png" alt="Screenshot"></figure>
+
+
+
+<p>3. Your Alby address will then appear in BlueWallet, and you can use it for paying and receiving Sats on your phone.</p>
+
+
+
+<h2>That’s it for a Start!</h2>
+
+
+
+<p>Find some interesting accounts to follow and enjoy the freedom of a real, permissionless and decentralized social media environment. By the way, Nostr is only one year old by the time of writing this article, so you are very early. And everything develops fast in the Nostr world, very fast. Lightning fast. You’ll discover not only new Nostr GUIs, but also other applications based on Nostr, like marketplaces or video sites. They all have the same core features of Nostr and you can sign in to each of them with your private key or Getalby.</p>
+
+
+
+<p>Here are some more Nostr resources, if you want to dive in deeper:</p>
+
+
+
+<ul>
+<li><a href="https://nostr-resources.com/">https://nostr-resources.com/</a></li>
+
+
+
+<li><a href="https://nostr.how/en/nostr-projects">https://nostr.how/en/nostr-projects</a></li>
+
+
+
+<li><a href="https://stacker.news/items/115261">https://stacker.news/items/115261</a></li>
+
+
+
+<li><a href="https://uselessshit.co/resources/nostr/">https://uselessshit.co/resources/nostr/</a></li>
+</ul>
+
+
+
+<hr>
+
+
+
+<p>Follow me on <a href="https://primal.net/p/npub175nul9cvufswwsnpy99lvyhg7ad9nkccxhkhusznxfkr7e0zxthql9g6w0">Primal</a> or on any other Nostr client:</p>
+
+
+
+<p>npub175nul9cvufswwsnpy99lvyhg7ad9nkccxhkhusznxfkr7e0zxthql9g6w0</p>
+
+
+
+<p>(you can copy &amp; paste this npub into the search field of a Nostr client and find my profile)</p>
+
+
+
+<p>If this guide has been helpful to you, consider <a>buying me a tea</a>!</p>
+
+			
+</div>

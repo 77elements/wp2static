@@ -83,8 +83,10 @@ export function jobPage(
   job: {
     status: 'running' | 'done';
     title: string;
+    updatedAt?: number;
     error?: string;
     doneUrl?: string;
+    fallbackUrl?: string;
     items: Array<{ label: string; status: string; count?: number; error?: string }>;
   },
 ): string {
@@ -100,11 +102,17 @@ export function jobPage(
   };
   const done = job.items.filter((i) => i.status === 'done' || i.status === 'failed').length;
   const running = job.status === 'running';
+  // Stillstand erkennen, BEVOR der Stall-Detektor (180 s) den Job abwürgt —
+  // ein tot gelaufener Child-Process sieht sonst minutenlang wie Arbeit aus.
+  const stale = running && job.updatedAt !== undefined && Date.now() - job.updatedAt > 60_000;
+  const staleHint = stale
+    ? `<p class="wizard__error" role="alert">No progress for over a minute — the run may have been interrupted (server restart?). Reload this page: if nothing moves, restart from the Full run page.</p>`
+    : '';
   const progress = `<p data-job-progress data-running="${running}">Processed ${done} of ${job.items.length}${running ? ' — updates automatically' : ''}.</p>`;
   const error = job.error
     ? `<pre class="wizard__preview wizard__error" role="alert">${escapeHtml(job.error)}</pre>`
     : '';
-  const backHref = job.doneUrl ?? `/wizard/${escapeHtml(slug)}/source`;
+  const backHref = job.doneUrl ?? job.fallbackUrl ?? `/wizard/${escapeHtml(slug)}/source`;
   const footer = running
     ? `<a class="btn btn--secondary" href="">Refresh</a>`
     : `<a class="btn" href="${backHref}">Back</a>`;
@@ -117,6 +125,7 @@ export function jobPage(
     </header>
     <div class="wizard__body">
       ${progress}
+      ${staleHint}
       ${error}
       <ul data-job-items>${job.items.map(row).join('')}</ul>
     </div>
@@ -240,8 +249,7 @@ export function sourceSummary(
 </main>`);
 }
 
-export function structurePage(
-  slug: string,
+export function structurePage(  slug: string,
   opts: {
     structure?: {
       scannedFrom: string;
@@ -320,7 +328,132 @@ export function structurePage(
     <footer class="wizard__actions">
       <div class="l-row--end-pair">
         <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/extract">Back</a>
+        <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/run">Next</a>
         <button class="btn" type="submit" form="structure-form">Scan structure</button>
+      </div>
+    </footer>
+  </section>
+</main>`);
+}
+
+export interface RunGroup {
+  source: string;
+  count: number;
+  representative: string;
+  previewed: boolean;
+  approved: boolean;
+}
+
+/** Sitemap-Dateiname → lesbarer Gruppenname: post-sitemap.xml → Posts. */
+function groupName(source: string): string {
+  const file = source.split('/').pop() ?? source;
+  const base = file.replace(/-sitemap\.xml$/i, '').replace(/\.xml$/i, '') || 'page';
+  const plural = base.endsWith('y') ? `${base.slice(0, -1)}ies` : `${base}s`;
+  return plural.charAt(0).toUpperCase() + plural.slice(1);
+}
+
+export function runGatePage(
+  slug: string,
+  opts: { groups: RunGroup[]; total: number; running: boolean; jobId?: string },
+): string {
+  const groupRow = (g: RunGroup, index: number): string => {
+    const sample = new URL(g.representative).pathname;
+    return `
+      <li>
+        <p><strong>${index + 1}. ${escapeHtml(groupName(g.source))}</strong> — ${g.count} URLs <code>${escapeHtml(g.source.split('/').pop() ?? '')}</code></p>
+        <p>
+          <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/extract?url=${encodeURIComponent(g.representative)}#preview">Preview sample</a>
+          <span>${g.previewed ? '✓ sample checked' : '✗ sample not checked yet'}</span>
+        </p>
+        <p>
+          <form method="post" action="/wizard/${escapeHtml(slug)}/run/approve">
+            <input type="hidden" name="group" value="${escapeHtml(g.source)}">
+            <button class="btn btn--secondary" type="submit">${g.approved ? 'Revoke approval' : 'Approve this group'}</button>
+            ${g.approved ? '<span>✓ approved</span>' : ''}
+          </form>
+        </p>
+      </li>`;
+  };
+  const allApproved = opts.groups.length > 0 && opts.groups.every((g) => g.approved);
+  const status = opts.running
+    ? `<p>The run is in progress — <a href="/wizard/${escapeHtml(slug)}/jobs/${escapeHtml(opts.jobId ?? '')}">open the progress page</a>.</p>`
+    : allApproved
+      ? '<p class="form__note">All groups approved. The run fetches every page sequentially (a few minutes), saves each one to <code>content/</code> and downloads the RSS feed. Nothing is uploaded — deployment is a separate, manual step. Failed pages are collected and listed at the end.</p>'
+      : '<p class="form__note">The Start button unlocks once every group shows “✓ approved”. Checking a sample of a group can also be any other URL of that group — the sample link below is just a suggestion.</p>';
+  return layout(`Full run — ${slug}`, `
+<main class="wizard">
+  <section class="wizard__card">
+    <header class="wizard__header">
+      <p class="wizard__kicker">wp2static · ${escapeHtml(slug)}</p>
+      <h1 class="h1">Full run</h1>
+    </header>
+    <div class="wizard__body">
+      <p>This copies your whole site into static files: all <strong>${opts.total}</strong> URLs → <code>content/</code>, plus the RSS feed. Nothing is uploaded or deployed.</p>
+      <p>Before it starts, look at <strong>one sample page per group</strong> (to check the block labels) and approve the group:</p>
+      <ol>${opts.groups.map(groupRow).join('')}</ol>
+      ${status}
+      <form id="run-start" method="post" action="/wizard/${escapeHtml(slug)}/run/start"></form>
+    </div>
+    <footer class="wizard__actions">
+      <div class="l-row--end-pair">
+        <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/structure">Back</a>
+        <button class="btn" type="submit" form="run-start"${allApproved && !opts.running ? '' : ' disabled'}>Start run</button>
+      </div>
+    </footer>
+  </section>
+</main>`);
+}
+
+export function contentSummaryPage(
+  slug: string,
+  opts: {
+    groups: Array<{ source: string; done: number; failed: number }>;
+    total: number;
+    failures: Array<{ url: string; error: string }>;
+    rss: { status: string; error?: string } | null;
+  },
+): string {
+  const rows = opts.groups
+    .map((g) => `<li><code>${escapeHtml(g.source)}</code> — ${g.done} extracted, ${g.failed} failed</li>`)
+    .join('');
+  const failures = opts.failures.length
+    ? `<h2 class="h3">Failed URLs</h2><pre class="wizard__preview">${escapeHtml(
+        opts.failures.map((f) => `${f.url} — ${f.error}`).join('\n'),
+      )}</pre>`
+    : '';
+  const processed = opts.groups.reduce((sum, g) => sum + g.done + g.failed, 0);
+  const rssDone = !opts.rss || opts.rss.status === 'done';
+  const complete = processed === opts.total && !opts.failures.length && rssDone;
+  const verdict = complete
+    ? '<p>All URLs extracted, RSS feed saved.</p>'
+    : `<p class="wizard__error" role="alert">Run incomplete: only ${processed} of ${opts.total} URLs were processed${
+        opts.failures.length ? ` (${opts.failures.length} failed — see list below)` : ''
+      }${!rssDone ? ', RSS feed not fetched' : ''}. The run was interrupted — restart it from the Full run page; already fetched pages come from the cache and are not downloaded again.</p>`;
+  const rss = opts.rss
+    ? `<p><strong>RSS feed:</strong> ${
+        opts.rss.status === 'done'
+          ? `saved to <code>data/rss.xml</code>`
+          : `<span class="wizard__error">not fetched (${escapeHtml(opts.rss.error || opts.rss.status)})</span>`
+      }</p>`
+    : '';
+  return layout(`Content extracted — ${slug}`, `
+<main class="wizard">
+  <section class="wizard__card">
+    <header class="wizard__header">
+      <p class="wizard__kicker">wp2static · ${escapeHtml(slug)}</p>
+      <h1 class="h1">Content extracted</h1>
+    </header>
+    <div class="wizard__body">
+      <p>${opts.total} URL${opts.total === 1 ? '' : 's'} processed into <code>sites/${escapeHtml(slug)}/content/</code>.</p>
+      <ul>${rows}</ul>
+      ${rss}
+      ${verdict}
+      ${failures}
+    </div>
+    <footer class="wizard__actions">
+      <div class="l-row--end-pair">
+        <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/run">Back</a>
+        <button class="btn btn--secondary" type="button" disabled>Build (follows)</button>
       </div>
     </footer>
   </section>

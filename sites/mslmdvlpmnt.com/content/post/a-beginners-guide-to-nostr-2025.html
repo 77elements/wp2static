@@ -1,0 +1,292 @@
+---
+type: post
+title: "A Beginner’s Guide to Nostr 2025 - [ mslm dvlpmnt ]"
+description: "In November 2023, I wrote the first part. Since then, quite a bit has changed, including my software and configuration recommendations for building a stable"
+datePublished: "2025-01-04T21:59:58+00:00"
+author: "Alp Uçkan"
+featuredImage:
+  src: "https://mslmdvlpmnt.com/wp-content/uploads/2023/11/nostr-cover-jpg.webp"
+  alt: "The Nostr Landscape"
+categories:
+  - name: "Social Media"
+    href: "https://mslmdvlpmnt.com/category/social-media/"
+source: "https://mslmdvlpmnt.com/a-beginners-guide-to-nostr-2025/"
+---
+<div class="article-content">
+
+				
+				
+				
+				
+				<h2>A Beginner’s Guide to Nostr 2025</h2>
+			
+
+				
+				
+				
+				
+				
+<p><a href="https://mslmdvlpmnt.com/a-beginners-guide-to-nostr/">In November 2023, I wrote the first part</a>. Since then, quite a bit has changed, including my software and configuration recommendations for building a stable Nostr identity, which I will describe here in a beginner-friendly manner.</p>
+
+
+
+<h3>What Hasn’t Changed</h3>
+
+
+
+<p>… is the protocol and the fundamental operation of Nostr. The description of this is still valid <a href="https://mslmdvlpmnt.com/a-beginners-guide-to-nostr/">in the 2023 article</a>. The principle of the key pair, consisting of a public key and a private key, which should be kept secure and secret as a definition of your own identity, has not fundamentally changed.</p>
+
+
+
+<h3>What Has Changed</h3>
+
+
+
+<ul>
+<li>Alby no longer offers custodial Lightning addresses. Therefore, I recommend a different Lightning provider for beginners.</li>
+
+
+
+<li>The Nostr client of choice has shifted to <em>Yakihonne</em>, which is available for both desktop browsers and mobile devices.</li>
+</ul>
+
+
+
+<p>Additionally, there are a few practical tips on how to behave to quickly connect with other Nostr users.</p>
+
+
+
+<h3>Table of Contents</h3>
+
+
+
+<ul>
+<li>Creating a Nostr Account with Yakihonne in the Desktop Browser</li>
+
+
+
+<li>Creating a Lightning Address with Coinos</li>
+
+
+
+<li>Connecting the Yakihonne Client to Coinos Lightning via NWC</li>
+
+
+
+<li>A Few Beginner Tips</li>
+</ul>
+
+
+
+<h3>Creating a Nostr Account with Yakihonne in the Desktop Browser</h3>
+
+
+
+<p><a href="https://yakihonne.com/">Yakihonne</a> can be accessed with a desktop browser at <a href="https://yakihonne.com/">https://</a><a href="https://yakihonne.com/">yakihonne</a><a href="https://yakihonne.com/">.com/</a> or searched for and installed in the app stores under its name. The setup of a Nostr account is largely identical across all platforms. However, I will only use screenshots from the desktop version in the browser in this article.</p>
+
+
+
+<p>1. Go to <a href="https://yakihonne.com/">https://yakihonne.com/</a>.</p>
+
+
+
+<figure><img width="1024" height="842" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot01-1024x842.png" alt="Screenshot"></figure>
+
+
+
+<p>2. Click on “Login” at the bottom left and then “Create Account”</p>
+
+
+
+<figure><img width="1024" height="526" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot02-1024x526.png" alt="Screenshot"></figure>
+
+
+
+<p>3. And set your profile data right away, then click “Next”.</p>
+
+
+
+<figure><img width="507" height="607" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot03.png" alt="Screenshot"></figure>
+
+
+
+<p>4. Select a few topics and people you would like to follow initially, or just click “Next.” You can follow or unfollow them later.</p>
+
+
+
+<figure><img width="514" height="797" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot04.png" alt="Screenshot"></figure>
+
+
+
+<p>5. In the next step, you will be offered to create a Yakihonne Lightning Wallet. You can certainly do this with a click if you know what you’re doing. But in this how-to, we want to create a Lightning address with Coinos later and connect it with Yakihonne. So I will just click “Next” here.</p>
+
+
+
+<figure><img width="508" height="530" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot05.png" alt="Screenshot"></figure>
+
+
+
+<p>6. In the final step, your profile will be displayed again along with a note on where to find your private key. Remember, it is the most important element of your Nostr identity, which you should keep secret and store securely. Now, let’s get started.</p>
+
+
+
+<figure><img width="521" height="688" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot06.png" alt="Screenshot"></figure>
+
+
+
+<p>7. In the desktop browser, you will see a three-part layout. On the left is the navigation bar, at the top are a few suggested articles (which are a different post type than notes, namely longer), and below is the familiar timeline.</p>
+
+
+
+<p>But first, let’s secure your secret key, which you don’t know yet. For that, go to your profile picture at the bottom left, then to “Settings,” and you will see “Your Keys” at the top. It’s best to copy them into your password manager.</p>
+
+
+
+<figure><img width="1024" height="772" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot08-1024x772.png" alt="Screenshot"></figure>
+
+
+
+<figure><img width="358" height="383" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot09.png" alt="Screenshot"></figure>
+
+
+
+<h3>Creating a Lightning Address with Coinos</h3>
+
+
+
+<p>Creating a Lightning address with Coinos is quite simple. After registering there with an email address and password,</p>
+
+
+
+<figure><img width="1024" height="554" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot10-1024x554.png" alt="v"></figure>
+
+
+
+<figure><img width="493" height="553" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot11.png" alt="Screenshot"></figure>
+
+
+
+<p>… you just go to your settings and set a username. Your Lightning address will then be [your-username]@coinos.io</p>
+
+
+
+<figure><img width="875" height="649" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot12.png" alt="Screenshot"></figure>
+
+
+
+<h3>Connecting Yakihonne to your Coinos Lightning Wallet via NWC</h3>
+
+
+
+<p>Now you just need to connect this Lightning address with the Yakihonne client. This is done through a handy standard called NWC (Nostr Wallet Connect). This is always a slightly cryptic string that must be entered into a Nostr client. </p>
+
+
+
+<p>1. You can find this string in the Coinos dashboard on the homepage, under the gear icon.</p>
+
+
+
+<figure><img width="729" height="503" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot13.png" alt="Screenshot"></figure>
+
+
+
+<p>2. Then click “Reveal connection string” and copy it.</p>
+
+
+
+<figure><img width="632" height="271" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot14.png" alt="Screenshot"></figure>
+
+
+
+<p>3. Return to Yakihonne and click on “Add Wallet” at the top left.</p>
+
+
+
+<figure><img width="565" height="625" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot15.png" alt="Screenshot"></figure>
+
+
+
+<p>4. And click the button again.</p>
+
+
+
+<figure><img width="438" height="375" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot16.png" alt="Screenshot"></figure>
+
+
+
+<p>5. In the subsequent pop-up, select “Nostr Wallet Connect.” This is the method we will use to connect your Coinos wallet.</p>
+
+
+
+<figure><img width="537" height="409" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot17.png" alt="Screenshot"></figure>
+
+
+
+<p>6. In the following field, paste the previously copied string and click “Connect.”</p>
+
+
+
+<figure><img width="898" height="316" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot18.png" alt="Screenshot"></figure>
+
+
+
+<p>7. After a short while, the current balance of your Lightning wallet should be displayed in Yakihonne. This means you are now ready to zap and be zapped.</p>
+
+
+
+<figure><img width="1024" height="648" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot19-1024x648.png" alt="Screenshot"></figure>
+
+
+
+<h3>A Few Beginner Tips</h3>
+
+
+
+<p>For newcomers, discovering interesting accounts is the most challenging part of Nostr. However, various options have emerged for this. For example:</p>
+
+
+
+<p>1. Use the “Discover” link in the sidebar.</p>
+
+
+
+<figure><img width="780" height="675" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot20.png" alt="Screenshot"></figure>
+
+
+
+<p>2. Search for specific terms and see who is talking about them and follow them.</p>
+
+
+
+<figure><img width="802" height="624" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot21.png" alt="Screenshot"></figure>
+
+
+
+<p>3. Write a little introduction about yourself in your first note. Who you are, what interests you, what people will read about you, etc. Don’t forget to tag this note with #introductions; some people search for that. You could also search for it and connect with other newcomers.</p>
+
+
+
+<figure><img width="892" height="609" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot22.png" alt="Screenshot"></figure>
+
+
+
+<p>4. Write a longer article. It will be displayed above the timeline of every Yakihonne user. Not always, of course, but randomly. This way, people are more likely to discover you.</p>
+
+
+
+<figure><img width="841" height="682" src="https://mslmdvlpmnt.com/wp-content/uploads/2025/01/screenshot23.png" alt="Screenshot"></figure>
+
+
+
+<p>And otherwise, on Nostr, it’s all about interacting, commenting, and zapping as much as you can. That’s what keeps Nostr alive. Compared to other centralized platforms, it’s much faster to get to know people. And don’t be put off by those who say “keep Nostr weird” and have strange profile pictures. You’re not on Instagram. They are still just normal people.</p>
+
+
+
+<p>And if you think that everything is very mono-thematic and you are interested in other topics, just start with that. You will surely coax out a few who also thought, “No one here is interested in that.”</p>
+
+
+
+<p>Have fun! Nostr is what you make of it.</p>
+
+			
+</div>

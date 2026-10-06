@@ -15,6 +15,7 @@ export const BLOCK_LABELS = [
   'meta-categories',
   'meta-date',
   'meta-comments',
+  'featured-image',
   'author-bio',
   'comments',
   'related-posts',
@@ -100,6 +101,10 @@ export function suggestLabel(block: ContentBlock, pageTitle = ''): BlockLabel {
   if (/\/category\//.test(block.html) && text.length < 200) return 'meta-categories';
   if (text.length < 60 && /\b(19|20)\d{2}\b/.test(text)) return 'meta-date';
   if (/^no results found/i.test(text)) return 'drop';
+  // Nur-Bild-Block mit Image-Klasse → Cover/Featured Image (Template rendert
+  // ihn aus dem Frontmatter, nicht aus dem Content). Echte Textmenge schließt
+  // Bild+Unterschrift-Blöcke aus.
+  if (/image/.test(cls) && /<img\s/.test(block.html) && text.length < 25) return 'featured-image';
   // Der Titel steht im Frontmatter — ein Block, der nur den Seitentitel
   // enthält, ist im Content redundant (Design rendert ihn aus den Metadaten).
   if (pageTitle && text.length >= MIN_TITLE_BLOCK_LENGTH && pageTitle.toLowerCase().startsWith(text.toLowerCase())) {

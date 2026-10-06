@@ -24,6 +24,8 @@ export interface Job {
   updatedAt: number;
   finishedAt?: number;
   doneUrl?: string;
+  // Wohin bei Abbruch/Stall (Stall-Detektor), wenn doneUrl nie gesetzt wurde.
+  fallbackUrl?: string;
   error?: string;
 }
 

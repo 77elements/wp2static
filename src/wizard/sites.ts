@@ -38,3 +38,8 @@ export async function loadJson<T>(slug: string, name: string): Promise<T | null>
   if (await file.exists()) return (await file.json()) as T;
   return null;
 }
+
+/** Absolute Pfadbasis einer Site (content/, cache/ etc. hängen daran). */
+export function siteDir(slug: string): string {
+  return path.join(ROOT, 'sites', slug);
+}

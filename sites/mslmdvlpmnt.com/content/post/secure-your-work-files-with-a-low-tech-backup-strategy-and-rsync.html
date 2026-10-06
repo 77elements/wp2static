@@ -1,0 +1,496 @@
+---
+type: post
+title: "Secure Your Work Files with a Low-Tech Backup Strategy and Rsync - [ mslm dvlpmnt ]"
+description: "A practical guide to building a reliable, low-tech backup strategy for Mac and Linux professionals using two USB hard drives and the open-source tool rsync. The article covers hardware requirements, behavioral changes for better backup habits, step-by-step rsync installation and configuration, mirroring commands with useful options, and how to automate nightly backups using cron jobs."
+datePublished: "2024-04-13T18:50:32+00:00"
+author: "Alp Uçkan"
+featuredImage:
+  src: "https://mslmdvlpmnt.com/wp-content/uploads/2024/04/sajad-nori-sIX4eDtak7k-unsplash.jpeg"
+  alt: "A hard drive"
+categories:
+  - name: "Work"
+    href: "https://mslmdvlpmnt.com/category/work/"
+source: "https://mslmdvlpmnt.com/secure-your-work-files-with-a-low-tech-backup-strategy-and-rsync/"
+---
+<div class="article-content">
+
+				
+				
+				
+				
+				<h2>Secure Your Work Files with a Low-Tech Backup Strategy and Rsync</h2>
+			
+
+				
+				
+				
+				
+				
+<p>Backups are crucial, especially for those who work professionally on desktop computers. Computers can unexpectedly fail; you might wake up one morning to find your computer won’t boot. While you can potentially replace the computer, the files you’ve worked on for years and stored on it aren’t as easily replaceable. Unless you have a reliable backup strategy in place.</p>
+
+
+
+<p>In this article, we’ll not only introduce a specific backup tool with a simple graphical interface but also delve into the entire strategy, which includes:</p>
+
+
+
+<ul>
+<li>Behavioral changes in your work habits,</li>
+
+
+
+<li>Data sovereignty and protection,</li>
+
+
+
+<li>Simplicity (low-tech) and reliability in backups.</li>
+</ul>
+
+
+
+<p>People who work professionally on computers typically use desktop machines running Windows, Mac, or Linux. This article describes the backup strategy for Mac and Linux machines (I haven’t supported Windows for years).</p>
+
+
+
+<h3>Required Purchases</h3>
+
+
+
+<p>We don’t want to simply toss our valuable and sometimes sensitive work files into the ‘cloud’. Clouds are simply ‘someone else’s computer’. We want our data to stay with us, and we don’t want to depend on the internet, especially considering the scenario of computer failures mentioned earlier.</p>
+
+
+
+<p>You’ll need 2 equally sized USB hard drives. The required size depends on your needs. As a developer, 1 terabyte drives suffice for me. A video editor or graphic designer might need more.</p>
+
+
+
+<p>Acquire them and format them with a file system that allows read and write access from all your systems, if not already done.</p>
+
+
+
+<p>Keep one hard drive constantly plugged into your computer, and store the other in a shaded cupboard, as it’s only for mirroring the first hard drive.</p>
+
+
+
+<p>Occasionally, or perhaps automatically at all times, you should be able to mirror the first hard drive. It should be a complete copy of the first hard drive. Because hard drives can fail too, having an identical second copy of your work files gives you enough time to buy a new, second USB hard drive in case of failure. After all, the likelihood of two hard drives failing simultaneously is very low.</p>
+
+
+
+<p>Since you need to connect at least 2 USB drives to your computer to mirror them, you should either have 2 free USB ports or consider purchasing a USB hub with multiple ports.</p>
+
+
+
+<h3>Behavioral Changes</h3>
+
+
+
+<p>Let’s be honest, working on the local hard drive and then transferring new files to the USB drive at the end of the day… hardly anyone does that. Or they simply forget. That’s why you should leave your local system as the operating system and keep your work files on the first USB drive as much as possible – open, edit, and save them from there. This may not be feasible for certain tasks, like working with large multimedia files; you’d prefer to work on the faster local SSD drive for those. But ideally, you’d work on your files on the USB drive, so you always have the latest version when it’s time to mirror them.</p>
+
+
+
+<h3>Backup Software</h3>
+
+
+
+<p>Especially on MacOSX, I’ve explored various backup tools, including the built-in Time Machine. They’re either not free, not intuitive, not fast enough, or hide their proprietary operations behind a graphical interface, which I personally dislike. Ultimately, a backup is just a copying process, and I prefer to see it clearly.</p>
+
+
+
+<p>That’s why I use the proven and fast open-source command-line tool rsync. And here, I’ll show you how to install it and use it to mirror the first USB drive onto the second.</p>
+
+
+
+<h3>Why rsync?</h3>
+
+
+
+<p><a href="https://rsync.samba.org/">Rsync</a> is a tool for efficiently copying files between locations. Imagine you have a folder full of photos on your laptop and want to back them up to your external hard drive. Rsync can help you do that quickly and reliably. Here’s what makes it special:</p>
+
+
+
+<ul>
+<li>Smart updates: Rsync only transfers the parts of files that have actually changed since the last copy. This saves time and bandwidth compared to copying everything again.</li>
+
+
+
+<li>Preserves details: It can keep important file characteristics like creation date and permissions intact during the copy.</li>
+
+
+
+<li>Versatility: It can copy files locally (between folders on your computer) or remotely (between your computer and another device on a network).</li>
+
+
+
+<li>Error handling: Rsync can detect and handle errors during transfer, like connection drops, and attempt to resume from where it left off.</li>
+</ul>
+
+
+
+<p>Here’s an analogy: Think of rsync like a librarian carefully comparing two books (source and destination) and only replacing the changed pages (modified parts of files) instead of copying the entire book again.</p>
+
+
+
+<p>Overall, rsync is a powerful tool for keeping your files backed up and synchronized across different locations, making it a favorite among tech users.</p>
+
+
+
+<h3>Installing rsync</h3>
+
+
+
+<p>All commands mentioned here are executed in the command line.</p>
+
+
+
+<h4>On Debian-based Linux systems like Ubuntu:</h4>
+
+
+
+<p>To verify if rsync already exists, you can use the command:</p>
+
+
+
+<pre><code><code>dpkg -L rsync</code></code></pre>
+
+
+
+<p>This command will list the files installed for the rsync package. If rsync is installed, you will see a list of files. If not, you’ll receive an error message.</p>
+
+
+
+<p>If rsync is not installed, you can install it using the following command in your terminal:</p>
+
+
+
+<pre><code><code>sudo apt update &amp;&amp; sudo apt install rsync</code></code></pre>
+
+
+
+<p>This command will update the package list and then install rsync using the apt package manager.</p>
+
+
+
+<p>That’s it! rsync should now be installed on your Ubuntu system.</p>
+
+
+
+<h4>On MacOSX:</h4>
+
+
+
+<p>To install rsync on the Mac, you’ll need the package management tool <a href="https://brew.sh/">Homebrew</a>. On their homepage, the first thing you’ll see is how to install it. At the time of writing this article, you can do that with the command line:</p>
+
+
+
+<pre><code><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></code></pre>
+
+
+
+<p>From there, you can use Homebrew to install rsync. Of course, you can also compile the rsync source code yourself if you’re more experienced and don’t want to install Homebrew, but that’s more complicated and error-prone.</p>
+
+
+
+<p>You can also uninstall Homebrew if you want. You can do that with the command:</p>
+
+
+
+<pre><code><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"</code></code></pre>
+
+
+
+<p>This won’t affect the installation of rsync or other tools installed with Homebrew; they’ll remain on the system. They just won’t be as easily updated, so I’d recommend leaving it installed.</p>
+
+
+
+<p>To install rsync on the Mac, use:</p>
+
+
+
+<pre><code><code>brew install rsync</code></code></pre>
+
+
+
+<p>Once installed, you can update it as follows:</p>
+
+
+
+<pre><code><code>brew update &amp;&amp; brew upgrade rsync</code></code></pre>
+
+
+
+<p>Issue the command:</p>
+
+
+
+<pre><code><code>rsync --version</code></code></pre>
+
+
+
+<p>and check it against the latest version listed on the rsync website.</p>
+
+
+
+<h3>Mirroring with Rsync</h3>
+
+
+
+<p>When you connect USB drives to Linux, they’re usually mounted under:</p>
+
+
+
+<pre><code><code>/media/[your-local-username]/[name_of-usb_drive]</code></code></pre>
+
+
+
+<p>On Macs, it’s under:</p>
+
+
+
+<pre><code><code>/Volumes/[name_of-usb_drive]</code></code></pre>
+
+
+
+<p>The rsync command is structured as follows:</p>
+
+
+
+<pre><code><code>rsync [some options] [source_drive] [destination_drive]</code></code></pre>
+
+
+
+<p>So if your first USB drive is named <code>BACKUP1</code> and your second is <code>BACKUP2</code>, and you’re logged into your Mac system as Joe, the simplest command would be:</p>
+
+
+
+<pre><code><code>rsync /Volumes/BACKUP1/ /Volumes/BACKUP2/</code></code></pre>
+
+
+
+<p>But we want to use some options. For example:</p>
+
+
+
+<pre><code><code>rsync -av --info=progress2 --chmod=+r /Volumes/BACKUP1/ /Volumes/BACKUP2/</code></code></pre>
+
+
+
+<p>What do these options do?</p>
+
+
+
+<ul>
+<li>-a: Preserves permissions, Preserves timestamps, Transfers symbolic links, Preserves device files, Preserves owner (if possible)</li>
+
+
+
+<li>-v: The -v parameter is a helpful tool for monitoring the progress and details of your rsync file transfers.</li>
+
+
+
+<li>–info=progress2: Works only from rsync version 3.0 onwards. It shows you, as the name suggests, the global progress of the entire copying action. If you have to settle for an older rsync version, you still have the –progress parameter, which is a bit less detailed.</li>
+
+
+
+<li>–chmod=+r: I’ve added this parameter for security reasons, as in some cases of different file systems, my files and directories were no longer readable. In most cases, you don’t need it. But I just use it as a standard.</li>
+</ul>
+
+
+
+<p>Execute the command, and you’ll see rsync copying your files to the other drive at top speed. Only the new and modified ones. This is a clean, stable, and fast backup for me, as it should be.</p>
+
+
+
+<p><strong>Problem</strong>: Your shell removes the last slash in this command.</p>
+
+
+
+<p><strong>Solution</strong>: Put the paths in quotation marks</p>
+
+
+
+<pre><code><code>rsync -av --info=progress2 --chmod=+r "/Volumes/BACKUP1/" "/Volumes/BACKUP2/"</code></code></pre>
+
+
+
+
+
+
+
+<p>If you don’t want to type or copy this long command every time, simply create a file named <code>mirror_drives.sh</code> wherever you prefer and write or copy the above command into it. In the future, you can initiate the mirroring process with <code>./mirror_drives.sh</code> or <code>sh mirror_drives.sh</code>.</p>
+
+
+
+<h3>For Advanced Users</h3>
+
+
+
+<p>The command line above is already sufficient enough. But let’s level up.</p>
+
+
+
+<p>You can get a bit more progress statistics by using:</p>
+
+
+
+<pre><code><code>--info=progress2,stats2</code></code></pre>
+
+
+
+<p>And when you want the file sizes to be human readable:</p>
+
+
+
+<pre><code>-h</code></pre>
+
+
+
+<p>When you always backup new or modified files, old files that you’ve since deleted remain on the target medium and accumulate. If you want to mirror your source medium 1-to-1, meaning you also want deleted files to be removed from the target medium, you need to tell rsync with this parameter:</p>
+
+
+
+<pre><code><code>--delete</code></code></pre>
+
+
+
+<p>Now, perhaps you don’t really want to delete the files that have been removed from the source medium, but rather keep them somehow. Then you need to instruct rsync to preserve these files in another directory. This can be done with:</p>
+
+
+
+<pre><code><code>--backup --backup-dir="/directory/of/deleted/files/"</code></code></pre>
+
+
+
+<p>You might also want to exclude certain directories or file types:</p>
+
+
+
+<pre><code>--exclude="*.tmp" --exclude=".Trash"</code></pre>
+
+
+
+<p>The complete rsync command would then look like this:</p>
+
+
+
+<pre><code><code>rsync -avh --delete --backup --backup-dir="/Volumes/BACKUP2/_deleted-files" --info=progress2,stats2 --chmod=+r </code>--exclude="*.tmp" --exclude=".Trash" <code><code>"/Volumes/BACKUP1/" "/Volumes/BACKUP2/"</code></code></code></pre>
+
+
+
+<h3>Automate Backups</h3>
+
+
+
+<p>Now imagine you want to run this command line every night at 3 AM:</p>
+
+
+
+<ol>
+<li>Write it in a text file and save it with the .sh file extension. To ensure your script has the correct shebang, add this as the first line:</li>
+</ol>
+
+
+
+<pre><code>#!/bin/bash</code></pre>
+
+
+
+<p>…and then the command line above, with the path and filename adjusted to your circumstances, of course.</p>
+
+
+
+<ol>
+<li>Make sure your script is executable:</li>
+</ol>
+
+
+
+<pre><code>chmod +x /path/to/your/script.sh</code></pre>
+
+
+
+<ol>
+<li>Open the cron editor and choose a text editor if you’re doing this for the first time (e.g., nano):</li>
+</ol>
+
+
+
+<pre><code>crontab -e</code></pre>
+
+
+
+<ol>
+<li>Then add a new line with the following format:</li>
+</ol>
+
+
+
+<pre><code>0 3 * * * /path/to/your/script.sh</code></pre>
+
+
+
+<p>This line runs the script every day at 3 AM. You can adjust the timing according to your preferences:</p>
+
+
+
+<ul>
+<li>The first number (0) represents the minute (0-59)</li>
+
+
+
+<li>The second number (3) represents the hour (0-23)</li>
+
+
+
+<li>The three asterisks stand for: day of month, month, and day of week.</li>
+</ul>
+
+
+
+<p>If your script produces output, it will be sent by email to the owner of the cron job by default. If you want to redirect the output to a file, you can do it like this:</p>
+
+
+
+<pre><code>0 3 * * * /path/to/your/script.sh &gt; /path/to/logfile.log 2&gt;&amp;1</code></pre>
+
+
+
+<p>This redirects both standard output and error messages to the specified log file.</p>
+
+
+
+<p>If you want to create a system-wide cron job (which runs with root privileges), you can use these files instead:</p>
+
+
+
+<pre><code>sudo nano /etc/cron.daily/myscript</code></pre>
+
+
+
+<p>And then place your script there (without the cron timing specification) and make it executable:</p>
+
+
+
+<pre><code>sudo chmod +x /etc/cron.daily/myscript</code></pre>
+
+
+
+<ol>
+<li>Save the file and exit the editor (in nano with CTRL+O to save and CTRL+X to exit).</li>
+
+
+
+<li>To verify that your cron job was successfully created, you can run the following command:</li>
+</ol>
+
+
+
+<pre><code>crontab -l</code></pre>
+
+
+
+<ol>
+<li>Done.</li>
+</ol>
+
+			
+</div>

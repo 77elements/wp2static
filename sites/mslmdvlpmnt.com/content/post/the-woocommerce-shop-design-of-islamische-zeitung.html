@@ -1,0 +1,118 @@
+---
+type: post
+title: "The WooCommerce Shop Design of Islamische Zeitung - [ mslm dvlpmnt ]"
+description: "How to design and implement a custom WooCommerce store front."
+datePublished: "2023-10-04T16:31:40+00:00"
+author: "Alp Uçkan"
+featuredImage:
+  src: "https://mslmdvlpmnt.com/wp-content/uploads/2023/10/cover-jpg.webp"
+  alt: "Cover image showing a desktop work place with the said website loaded in it."
+categories:
+  - name: "Web Development"
+    href: "https://mslmdvlpmnt.com/category/web-development/"
+source: "https://mslmdvlpmnt.com/the-woocommerce-shop-design-of-islamische-zeitung/"
+---
+<div class="article-content">
+
+				
+				
+				
+				
+				<h2>The WooCommerce Shop Design of Islamische Zeitung</h2>
+			
+
+				
+				
+				
+				
+				
+<p><em>– A different kind of Product Overview Page</em></p>
+
+
+
+<p>Typical WooCommerce shop pages <a href="https://themes.woocommerce.com/homestore/shop/">look like this by default</a>. Product tiles and a sidebar with categories and other stuff. When I wanted to do the <a href="https://islamische-zeitung.de/shop/">product overview of the Islamic Zeitung (IZ)</a>, I didn’t feel like using the default view of WooCommerce store fronts, which look like this:</p>
+
+
+
+<figure><a href="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/woocommerce-demos-homestore.png"><img width="1024" height="699" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/woocommerce-demos-homestore-1024x699.png" alt="Demo of the default WooCommerce store front"></a><figcaption>Demo of the default WooCommerce store front</figcaption></figure>
+
+
+
+<p>The IZ Shop has 3 types of products: subscription products with monthly recurring payment, books and voluntary donations to support this project, which is independently self-financed and not sponsored by any organization. Instead of the usual three-way categorization, I wanted to express the differences purely visually.</p>
+
+
+
+<h2>Visual Design of the 3 Product Categories</h2>
+
+
+
+<p>As a first deviation from the rest of the website, the layout spans the full width of the browser window. It doesn’t have a wrapper column limited by <code>max-width</code> like the rest of the website. The 2 subscription products, which represent the newspaper’s core business, are generously displayed in the front row on patterned backgrounds. By the way, all product photos, except for the coffee cup below, were photographed and edited by ourselves. The stack of newspapers for the print subscription was even shot with a 6-year-old cell phone. The books were scanned with a standard 2D scanner.</p>
+
+
+
+<p>The bottom row consists of the tipping and support products (<em>Tip us a coffee</em> and funding subscription). In between, the books are displayed in a slider carousel, which also works on smaller resolutions. On phones, only fewer books are displayed, but it’s the same HTML/CSS code for all resolutions. No special responsive features.</p>
+
+
+
+<h2>How to Create a Custom Shop Template in WooCommerce</h2>
+
+
+
+<p>Now to the technical side. The original WooCommerce shop template can be found at <a href="https://github.com/woocommerce/woocommerce/tree/trunk/plugins/woocommerce/templates">/plugins/woocommerce/templates</a> in archive-product.php. To overwrite it, you just have to copy the <code>archive-product.php</code> file to your theme folder <code>[your-theme/woocommerce/archive-product.php]</code> and then edit it from there. (<a href="https://woocommerce.com/document/template-structure/">More about WooCommerce’s document structure</a>).</p>
+
+
+
+<p>You can delete or comment out the original code with the <code>woocommerce_product_loop()</code> statement, because with this custom design, looped product tiles are not needed.</p>
+
+
+
+<p>Using a product shortcode, you can now select the top and bottom 2 products specifically by product ID.</p>
+
+
+
+<p><code>[products <strong>ids</strong>="1,2" columns="2" class="whatever"]</code></p>
+
+
+
+<figure><a href="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/codeimage-snippet_4.png"><img width="1024" height="270" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/codeimage-snippet_4-1024x270.png" alt="Screenshot of the actual code snippet"></a><figcaption>Screenshot of the actual code snippet</figcaption></figure>
+
+
+
+<p>I moved the product slider for the books to another template, which basically does the same thing. The only difference is that the books are selected by category ID:</p>
+
+
+
+<p><code>[products <strong>category</strong>="3,4" columns="1" class="whatever"]</code></p>
+
+
+
+<figure><a href="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/codeimage-snippet_productslider.png"><img width="1024" height="327" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/codeimage-snippet_productslider-1024x327.png" alt="Screenshot of the actual code snippet"></a><figcaption>Screenshot of the actual code snippet</figcaption></figure>
+
+
+
+<p>This is what it looks like in the current version:</p>
+
+
+
+
+
+<figure><a href="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/433shots_so_desktop.png"><img width="700" height="720" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/433shots_so_desktop.png" alt="Screenshot of the actual IZ store front in desktop browsers"></a><figcaption>Screenshot of the actual IZ store front in desktop browsers</figcaption></figure>
+
+
+
+
+
+<figure><img width="300" height="720" src="https://mslmdvlpmnt.com/wp-content/uploads/2023/10/433shots_so_smartphone.png" alt="Screenshot of the actual IZ store front in mobile phones"><figcaption>Screenshot of the actual IZ store front in mobile phones</figcaption></figure>
+
+
+
+
+
+<h2>Conclusion</h2>
+
+
+
+<p>You should make use of these options if you want to design a shop that stands out a little from the others. Instead of presenting taxonomies like product categories in an abstract way with a link list in the sidebar, you can also weight them visually.</p>
+
+			
+</div>

@@ -1,0 +1,83 @@
+{
+  "baseUrl": "https://mslmdvlpmnt.com/",
+  "scannedFrom": "https://mslmdvlpmnt.com/",
+  "scannedAt": "2026-10-06T21:36:04.477Z",
+  "navigation": [
+    {
+      "label": "Home",
+      "href": "https://mslmdvlpmnt.com/",
+      "items": []
+    },
+    {
+      "label": "Services",
+      "href": "https://mslmdvlpmnt.com/services/",
+      "items": []
+    },
+    {
+      "label": "Website Test",
+      "href": "https://mslmdvlpmnt.com/get-your-website-tested/",
+      "items": []
+    },
+    {
+      "label": "Portfolio",
+      "href": "https://mslmdvlpmnt.com/portfolio/",
+      "items": []
+    },
+    {
+      "label": "Blog",
+      "href": "https://mslmdvlpmnt.com/blog/",
+      "items": []
+    },
+    {
+      "label": "The White Ram Lamb",
+      "href": "https://mslmdvlpmnt.com/the-white-ram-lamb/",
+      "items": []
+    },
+    {
+      "label": "Contact",
+      "href": "https://mslmdvlpmnt.com/contact/",
+      "items": []
+    }
+  ],
+  "logo": null,
+  "footer": {
+    "scannedFrom": "https://mslmdvlpmnt.com/",
+    "navigation": [
+      {
+        "label": "Imprint",
+        "href": "https://mslmdvlpmnt.com/imprint/",
+        "items": []
+      },
+      {
+        "label": "Privacy Policy",
+        "href": "https://mslmdvlpmnt.com/privacy-policy/",
+        "items": []
+      },
+      {
+        "label": "Data Request and Deletion",
+        "href": "https://mslmdvlpmnt.com/data-request-and-deletion/",
+        "items": []
+      },
+      {
+        "label": "Change privacy settings",
+        "href": "https://mslmdvlpmnt.com/#consent-change",
+        "items": []
+      },
+      {
+        "label": "Privacy settings history",
+        "href": "https://mslmdvlpmnt.com/#consent-history",
+        "items": []
+      },
+      {
+        "label": "Revoke consents",
+        "href": "https://mslmdvlpmnt.com/#consent-revoke",
+        "items": []
+      },
+      {
+        "label": "Accessibility Statement",
+        "href": "https://mslmdvlpmnt.com/accessibility-statement/",
+        "items": []
+      }
+    ]
+  }
+}

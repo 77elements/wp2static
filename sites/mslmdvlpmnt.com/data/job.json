@@ -1,32 +1,548 @@
 {
   "slug": "mslmdvlpmnt.com",
-  "title": "Collecting URLs",
+  "title": "Extracting content",
   "items": [
     {
-      "label": "https://mslmdvlpmnt.com/post-sitemap.xml",
+      "label": "https://mslmdvlpmnt.com/blog/",
       "status": "done",
-      "count": 29
+      "count": 1
     },
     {
-      "label": "https://mslmdvlpmnt.com/page-sitemap.xml",
+      "label": "https://mslmdvlpmnt.com/how-to-use-a-miswak-for-oral-hygiene/",
       "status": "done",
-      "count": 12
+      "count": 1
     },
     {
-      "label": "https://mslmdvlpmnt.com/project-sitemap.xml",
+      "label": "https://mslmdvlpmnt.com/omar-usmans-social-media-40-ahadith-about-social-media/",
       "status": "done",
-      "count": 55
+      "count": 1
     },
     {
-      "label": "https://mslmdvlpmnt.com/category-sitemap.xml",
+      "label": "https://mslmdvlpmnt.com/new-trend-in-charity-bitcoin-donations/",
       "status": "done",
-      "count": 10
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/the-woocommerce-shop-design-of-islamische-zeitung/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/html-lightning-links/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/the-success-of-low-quality-content/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/unveiling-usability-challenges-and-trust-gaps-in-the-bitcoin-lightning-era/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/beyond-the-eagles-view-the-true-measure-of-leadership-in-business-and-politics/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/a-beginners-guide-to-nostr/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/before-his-sweat-has-dried/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/was-ist-ethisch-korrekte-website-entwicklung/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/what-is-ethically-correct-website-development/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/the-rise-of-dubious-business-consultants/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/secure-your-work-files-with-a-low-tech-backup-strategy-and-rsync/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/the-gamble-of-business-success-coaching-are-you-buying-a-pig-in-a-poke/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/a-beginners-guide-to-nostr-2025/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/the-price-of-self-sovereignty/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/free-website-test-dieunterschiedmacherin-de/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/free-website-test-muslim-kids-de/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/free-website-test-wordpress-com/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/free-website-test-coinos-io/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-obscura-vpn-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-getalby-com/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-npub-pro/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-wave-space/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-jellyfish-land/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-anwaryou-de/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/light-website-test-verkaufenmitwerten-de/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/terms-and-conditions/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/the-white-ram-lamb/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/services/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/privacy-policy/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/portfolio/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/imprint/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/get-your-website-tested/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/data-request-and-deletion/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/der-weise-lammbock/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/contact/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/accessibility-statement/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/first-computer-first-programming-steps/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/commodore-plus-4/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/first-job-as-network-admin/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/sysadmin-sysadmin/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/first-contact-with-the-www-at-the-university/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/internet-access-home/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/website-no-1/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/superbrain-de-website-the-early-ancestor-of-my-web-usability-phase/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/first-paid-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/superbrain-de-website-redesign/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/mobile-and-acoustic-version-of-superbrain-de/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/2001-2005-websites-for-sighthound-breeders/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/usability-test-net-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/was-ist-rss-guide/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/rssify-tng-ajax-app/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/werkstatt-portfolio-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/blogging-into-the-dark-ages/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/foaf-friend-of-friend-rdf-guide/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/wordpress-theme-stone-age/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/kultur-aktuell-website-seo/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/web-und-it-service-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/uckanleitungen-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/serendipity-theme-breathe/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/wordpress-theme-limpid/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/serendipity-theme-ankaraner/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/studivz-frontend-development/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/imedo-frontend-development/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/semigator-frontend-development/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/serendipity-theme-adaptation/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/wordpress-theme-susannalyse/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/fapulous-framework-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/mashi-toolkit-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/monitorthis-web-app/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/mashi-custom-development-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/website-of-a-goal-keeper/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/tacirnet-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/agency-work-on-different-websites/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/dental-clinic-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/website-of-a-finance-company/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/rewe-digital-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/football-talent-agency-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/personal-website-of-a-publisher/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/iz-markplatz-marketplace-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/fiqh-of-social-media-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/ascendics-mobile-app-design/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/islamische-zeitung-news-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/muzlim-market-marketplace-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/muzlim-social-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/islamic-marketplace-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/bitcoin-experts-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/ui-design-for-iz-mobile-app/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/covid-neighbourhood-help-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/art-of-camping-hobby-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/project/bitcoin-majlis-website/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/webwork/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/social-media/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/bitcoin/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/life/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/work/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/entrepreneurship/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/website-tests/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/web-development/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/how-to/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "https://mslmdvlpmnt.com/category/islam/",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "label": "RSS feed",
+      "status": "done",
+      "count": 1
     }
   ],
-  "id": "901b1792",
+  "fallbackUrl": "/wizard/mslmdvlpmnt.com/run",
+  "id": "e3fc9d44",
   "status": "done",
-  "startedAt": 1790883832795,
-  "updatedAt": 1790883835700,
-  "doneUrl": "/wizard/mslmdvlpmnt.com/extracted",
-  "finishedAt": 1790883835700
+  "startedAt": 1791323480361,
+  "updatedAt": 1791323530838,
+  "doneUrl": "/wizard/mslmdvlpmnt.com/content",
+  "finishedAt": 1791323530838
 }

@@ -1,3 +1,5 @@
 {
-  "contentSelectors": ".et_pb_post_content"
+  "contentSelectors": "",
+  "navSelector": "",
+  "footerSelector": ""
 }

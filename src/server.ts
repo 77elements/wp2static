@@ -13,9 +13,9 @@
 import { compileString } from 'sass';
 import { watch } from 'node:fs';
 import path from 'node:path';
-import { step1, step1Done, sourceForm, sourceSelect, sourceSummary, extractionForm, jobPage, structurePage } from './ui/pages';
+import { step1, step1Done, sourceForm, sourceSelect, sourceSummary, extractionForm, jobPage, structurePage, runGatePage, contentSummaryPage } from './ui/pages';
 import { slugifySiteName } from './wizard/slug';
-import { createSiteDirs, saveJson, loadJson } from './wizard/sites';
+import { createSiteDirs, saveJson, loadJson, siteDir } from './wizard/sites';
 import { fetchSitemap, detectSitemap, type SitemapDoc } from './wizard/sitemap';
 import { fetchPage, extractPage } from './wizard/extract';
 import { createJob, persistJob, loadJob, type Job } from './wizard/jobs';
@@ -149,6 +149,16 @@ interface SiteConfig {
   contentSelectors: string;
   navSelector?: string;
   footerSelector?: string;
+  delayMs?: number;
+  rssUrl?: string;
+}
+
+interface RunState {
+  groups: Record<string, { approved: boolean; approvedAt?: string }>;
+}
+
+interface PreviewsState {
+  urls: Array<{ url: string; at: string }>;
 }
 
 interface LabeledBlock {
@@ -214,11 +224,12 @@ async function runCollectJob(slug: string, baseUrl: string, sitemapUrl: string, 
 
 // Hängengebliebene Jobs (z. B. Server-Restart unter bun --hot killt den
 // laufenden Task) markieren — sonst pollt die Fortschrittsseite für immer.
+// 180 s: ein Crawl-Item kann mit Timeouts + Retry-Backoff ~100 s brauchen.
 async function resolveJob(slug: string, job: Job): Promise<Job> {
-  if (job.status === 'running' && Date.now() - job.updatedAt > 60_000) {
+  if (job.status === 'running' && Date.now() - job.updatedAt > 180_000) {
     job.status = 'done';
-    job.error = 'Job stalled — no progress for 60 s (server restart?). Go back and re-run.';
-    job.doneUrl = job.doneUrl ?? `/wizard/${slug}/source/select`;
+    job.error = 'Job stalled — no progress for 180 s (server restart?). Restart it from the Full run page.';
+    job.doneUrl = job.doneUrl ?? job.fallbackUrl ?? `/wizard/${slug}/source/select`;
     await persistJob(job);
   }
   return job;
@@ -346,6 +357,7 @@ Bun.serve({
         slug,
         title: 'Collecting URLs',
         items: selected.map((label) => ({ label, status: 'pending' as const })),
+        fallbackUrl: `/wizard/${slug}/source/select`,
       });
       void runCollectJob(slug, base.href, sitemapUrl, job);
 
@@ -363,6 +375,7 @@ Bun.serve({
         status: job.status,
         error: job.error ?? null,
         doneUrl: job.doneUrl ?? null,
+        updatedAt: job.updatedAt,
         items: job.items,
       });
     }
@@ -490,6 +503,12 @@ Bun.serve({
           generatedAt: new Date().toISOString(),
         };
         await saveJson(slug, 'preview.json', preview);
+        // Preview-Historie für das Voll-Lauf-Gate (pro Content-Gruppe ≥ 1 Preview).
+        const history = (await loadJson<PreviewsState>(slug, 'previews.json')) ?? { urls: [] };
+        if (!history.urls.some((e) => e.url === target)) {
+          history.urls.push({ url: target, at: new Date().toISOString() });
+          await saveJson(slug, 'previews.json', history);
+        }
         return redirect(`/wizard/${slug}/extract?url=${encodeURIComponent(target)}#preview`);
       } catch (error) {
         return html(extractionForm(slug, { groups, selectedUrl: target, selectors, error: (error as Error).message }), 502);
@@ -534,6 +553,123 @@ Bun.serve({
         const prev = await loadJson<SiteStructure>(slug, 'site.json');
         return html(structurePage(slug, { structure: prev, navSelector, footerSelector, error: (error as Error).message }), 502);
       }
+    }
+
+    // ---- Step 4: Full run (gate + child-process crawl) ----
+
+    if (req.method === 'GET' && url.pathname.endsWith('/run') && !url.pathname.includes('/run/') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const urls = await loadJson<UrlsState>(slug, 'urls.json');
+      if (!urls) return redirect(`/wizard/${slug}/extract`);
+      // Historie einmalig aus dem letzten Preview befüllen (vor der Funktion
+      // gemachte Previews gelten weiter).
+      let previews = await loadJson<PreviewsState>(slug, 'previews.json');
+      if (!previews) {
+        const last = await loadJson<{ url: string }>(slug, 'preview.json');
+        previews = { urls: last?.url ? [{ url: last.url, at: new Date().toISOString() }] : [] };
+      }
+      const previewed = new Set(previews.urls.map((e) => e.url));
+      const run = await loadJson<RunState>(slug, 'run.json');
+      const job = await loadJob(slug);
+      const groups = groupBySitemap(urls.urls).map((g) => ({
+        source: g.source,
+        count: g.urls.length,
+        representative: g.urls[0] ?? '',
+        previewed: g.urls.some((u) => previewed.has(u)),
+        approved: Boolean(run?.groups?.[g.source]?.approved),
+      }));
+      return html(runGatePage(slug, { groups, total: urls.total, running: job?.status === 'running', jobId: job?.id }));
+    }
+
+    if (req.method === 'POST' && url.pathname.endsWith('/run/approve') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const form = await req.formData();
+      const group = String(form.get('group') ?? '');
+      const urls = await loadJson<UrlsState>(slug, 'urls.json');
+      if (!group || !urls?.urls.some((e) => e.sitemap === group)) {
+        return html(sourceForm(slug, { error: 'Invalid group approval request.' }), 400);
+      }
+      const run = (await loadJson<RunState>(slug, 'run.json')) ?? { groups: {} };
+      if (run.groups[group]?.approved) {
+        delete run.groups[group];
+      } else {
+        run.groups[group] = { approved: true, approvedAt: new Date().toISOString() };
+      }
+      await saveJson(slug, 'run.json', run);
+      return redirect(`/wizard/${slug}/run`);
+    }
+
+    if (req.method === 'POST' && url.pathname.endsWith('/run/start') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const urls = await loadJson<UrlsState>(slug, 'urls.json');
+      if (!urls) return redirect(`/wizard/${slug}/extract`);
+      const run = await loadJson<RunState>(slug, 'run.json');
+      const groups = groupBySitemap(urls.urls);
+      const job = await loadJob(slug);
+      if (job?.status === 'running') return redirect(`/wizard/${slug}/jobs/${job.id}`);
+      if (!groups.length || !groups.every((g) => run?.groups?.[g.source]?.approved)) {
+        return redirect(`/wizard/${slug}/run`);
+      }
+      const crawl = await createJob({
+        slug,
+        title: 'Extracting content',
+        items: [
+          ...urls.urls.map((e) => ({ label: e.url, status: 'pending' as const })),
+          { label: 'RSS feed', status: 'pending' as const },
+        ],
+        fallbackUrl: `/wizard/${slug}/run`,
+      });
+      // Child-Process, detached (eigene Prozessgruppe): Server-Neustart,
+      // Ctrl-C und bun --hot-Reloads reißen den Crawl nicht ab. Zustand nur
+      // über job.json. stderr landet in data/crawl.log — ein still sterbendes
+      // Child ist die eine Fehlerklasse, die man sonst nie zu sehen bekommt.
+      // src/server.ts → src/wizard/crawl-job.ts (NICHT '../wizard' — das
+      // zeigt aus src/ heraus auf <root>/wizard, wo nichts liegt).
+      const entry = new URL('./wizard/crawl-job.ts', import.meta.url).pathname;
+      const proc = Bun.spawn([process.execPath, entry, slug, crawl.id], {
+        stdout: 'ignore',
+        stderr: 'pipe',
+        stdin: 'ignore',
+        detached: true,
+      });
+      proc.unref();
+      void (async () => {
+        const stderr = await new Response(proc.stderr).text();
+        const code = await proc.exited;
+        const sink = Bun.file(`${siteDir(slug)}/data/crawl.log`).writer({ append: true });
+        sink.write(`[${new Date().toISOString()}] crawl pid=${proc.pid} exited code=${code}\n${stderr || '(no stderr)'}\n`);
+        await sink.end();
+      })();
+      return redirect(`/wizard/${slug}/jobs/${crawl.id}`);
+    }
+
+    if (req.method === 'GET' && url.pathname.endsWith('/content') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const urls = await loadJson<UrlsState>(slug, 'urls.json');
+      if (!urls) return redirect(`/wizard/${slug}/source`);
+      const job = await loadJob(slug);
+      if (!job || job.status !== 'done') return redirect(`/wizard/${slug}/run`);
+      const sitemapOf = new Map(urls.urls.map((e) => [e.url, e.sitemap]));
+      const groups = new Map<string, { done: number; failed: number }>();
+      const failures: Array<{ url: string; error: string }> = [];
+      for (const item of job.items) {
+        if (item.label === 'RSS feed') continue;
+        const source = sitemapOf.get(item.label) ?? 'unknown';
+        const group = groups.get(source) ?? { done: 0, failed: 0 };
+        if (item.status === 'done') group.done += 1;
+        if (item.status === 'failed') {
+          group.failed += 1;
+          failures.push({ url: item.label, error: item.error ?? '' });
+        }
+        groups.set(source, group);
+      }
+      const rss = job.items.find((i) => i.label === 'RSS feed') ?? null;
+      return html(contentSummaryPage(slug, {
+        groups: [...groups.entries()].map(([source, g]) => ({ source, ...g })),
+        total: urls.total,
+        failures,
+        rss: rss ? { status: rss.status, error: rss.error } : null,
+      }));
     }
 
     return new Response('Not found', { status: 404 });

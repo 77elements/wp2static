@@ -1,0 +1,97 @@
+{
+  "rules": [
+    {
+      "match": [
+        "et_pb_with_border",
+        "et_pb_module",
+        "et_pb_image",
+        "et_pb_image_0_tb_body"
+      ],
+      "label": "featured-image"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_blurb",
+        "et_pb_blurb_0_tb_body",
+        "md-blurb-author",
+        "et_pb_text_align_left",
+        "et_pb_blurb_position_left",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "author-bio"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_blurb",
+        "et_pb_blurb_1_tb_body",
+        "et_pb_text_align_left",
+        "et_pb_blurb_position_left",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "meta-date"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_blurb",
+        "et_pb_blurb_2_tb_body",
+        "et_pb_text_align_left",
+        "et_pb_blurb_position_left",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "meta-categories"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_blurb",
+        "et_pb_blurb_3_tb_body",
+        "et_pb_text_align_left",
+        "et_pb_blurb_position_left",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "meta-comments"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_post_nav_0_tb_body",
+        ".post-navigation",
+        "et_pb_posts_nav",
+        "nav-single"
+      ],
+      "label": "related-posts"
+    },
+    {
+      "match": [
+        "et_pb_with_border",
+        "et_pb_module",
+        "et_pb_comments_0_tb_body",
+        "et_pb_comments_module",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "comments"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_blog_0_tb_body",
+        "et_pb_blog_grid_wrapper",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "related-posts"
+    },
+    {
+      "match": [
+        "et_pb_module",
+        "et_pb_text",
+        "et_pb_text_1_tb_body",
+        "et_pb_text_align_left",
+        "et_pb_bg_layout_light"
+      ],
+      "label": "related-posts"
+    }
+  ]
+}
