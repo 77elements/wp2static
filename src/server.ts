@@ -13,13 +13,14 @@
 import { compileString } from 'sass';
 import { watch } from 'node:fs';
 import path from 'node:path';
-import { step1, step1Done, sourceForm, sourceSelect, sourceSummary, extractionForm, jobPage } from './ui/pages';
+import { step1, step1Done, sourceForm, sourceSelect, sourceSummary, extractionForm, jobPage, structurePage } from './ui/pages';
 import { slugifySiteName } from './wizard/slug';
 import { createSiteDirs, saveJson, loadJson } from './wizard/sites';
 import { fetchSitemap, detectSitemap, type SitemapDoc } from './wizard/sitemap';
 import { fetchPage, extractPage } from './wizard/extract';
 import { createJob, persistJob, loadJob, type Job } from './wizard/jobs';
 import { BLOCK_LABELS, blockClasses, loadRules, matchLabel, saveRule, suggestLabel, type BlockLabel } from './wizard/blocks';
+import { extractNavigation, extractLogo, extractFooter, type SiteStructure } from './wizard/structure';
 
 const ROOT = path.resolve(import.meta.dir, '..');
 const PORT = Number(process.env.PORT ?? 4321);
@@ -146,6 +147,8 @@ interface PreviewState {
 // Vom User festgelegte Site-Parameter (Wizard-Schritt 3, gilt für alle Seiten).
 interface SiteConfig {
   contentSelectors: string;
+  navSelector?: string;
+  footerSelector?: string;
 }
 
 interface LabeledBlock {
@@ -422,7 +425,7 @@ Bun.serve({
         block: match.length ? undefined : block,
         label: label as BlockLabel,
       });
-      return redirect(`/wizard/${slug}/extract?url=${encodeURIComponent(base.href)}#preview`);
+      return redirect(`/wizard/${slug}/extract?url=${encodeURIComponent(base.href)}#block-${block}`);
     }
 
     if (req.method === 'GET' && url.pathname.endsWith('/extract') && !url.pathname.endsWith('/extracted') && slugFromPath(url.pathname)) {
@@ -439,7 +442,7 @@ Bun.serve({
         const rules = await loadRules(slug);
         labeledBlocks = preview.result.blocks.map((block, index) => {
           const current = matchLabel(rules, block, preview.result.url, index);
-          return { ...block, current, suggested: current ?? suggestLabel(block) };
+          return { ...block, current, suggested: current ?? suggestLabel(block, preview.result.title) };
         });
       } else if (preview?.result) {
         labeledBlocks = [{ ...preview.result, origClass: '', current: null, suggested: 'article' }];
@@ -490,6 +493,46 @@ Bun.serve({
         return redirect(`/wizard/${slug}/extract?url=${encodeURIComponent(target)}#preview`);
       } catch (error) {
         return html(extractionForm(slug, { groups, selectedUrl: target, selectors, error: (error as Error).message }), 502);
+      }
+    }
+
+    // ---- Step 3b: Site structure (navigation) ----
+
+    if (req.method === 'GET' && url.pathname.endsWith('/structure') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const structure = await loadJson<SiteStructure>(slug, 'site.json');
+      const config = await loadJson<SiteConfig>(slug, 'config.json');
+      return html(structurePage(slug, { structure, navSelector: config?.navSelector ?? '', footerSelector: config?.footerSelector ?? '' }));
+    }
+
+    if (req.method === 'POST' && url.pathname.endsWith('/structure') && slugFromPath(url.pathname)) {
+      const slug = slugFromPath(url.pathname)!;
+      const source = await loadJson<SourceState>(slug, 'source.json');
+      if (!source) {
+        return html(sourceForm(slug, { error: 'No source configured yet — run the source step first.' }), 400);
+      }
+      const form = await req.formData();
+      const navSelector = String(form.get('navselector') ?? '');
+      const footerSelector = String(form.get('footerselector') ?? '');
+      // Selektoren sind Site-Entscheidungen — site-weit persistiert wie contentSelectors.
+      const existing = await loadJson<SiteConfig>(slug, 'config.json');
+      await saveJson(slug, 'config.json', { ...existing, navSelector, footerSelector });
+      try {
+        // Ein einzelner Scrape der Startseite — Header/Footer sind site-weit konstant.
+        const pageHtml = await fetchPage(source.baseUrl);
+        const structure: SiteStructure = {
+          baseUrl: source.baseUrl,
+          scannedFrom: source.baseUrl,
+          scannedAt: new Date().toISOString(),
+          navigation: extractNavigation(pageHtml, source.baseUrl, navSelector),
+          logo: extractLogo(pageHtml, source.baseUrl),
+          footer: extractFooter(pageHtml, source.baseUrl, footerSelector),
+        };
+        await saveJson(slug, 'site.json', structure);
+        return redirect(`/wizard/${slug}/structure`);
+      } catch (error) {
+        const prev = await loadJson<SiteStructure>(slug, 'site.json');
+        return html(structurePage(slug, { structure: prev, navSelector, footerSelector, error: (error as Error).message }), 502);
       }
     }
 

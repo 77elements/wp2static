@@ -13,6 +13,9 @@ import type { ContentBlock } from './blocks';
 const UA = 'wp2static/0.1 (local converter)';
 const AUTO_SELECTORS = ['.entry-content', '.et_pb_post_content', 'article', 'main'];
 const MIN_CONTENT_LENGTH = 200;
+// Scopes, in denen Page-Builder-Module als Blöcke dienen (erstes Vorkommen gewinnt).
+const MODULE_SCOPES = ['.et-l--body', '#main-content', 'main'];
+const MODULE_SELECTOR = '.et_pb_module';
 
 // Semantische Tags, die als Knoten erhalten bleiben (ohne Attribute außer den
 // hier genannten). b/i werden zu strong/em normalisiert.
@@ -81,8 +84,7 @@ function extractDatePublished($: cheerio.CheerioAPI): string {
   return date;
 }
 
-function safeUrl(raw: string, base: string): string | null {
-  try {
+export function safeUrl(raw: string, base: string): string | null {  try {
     const url = new URL(raw, base);
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
     return url.href;
@@ -108,6 +110,26 @@ function cleanAttrs($: cheerio.CheerioAPI, el: cheerio.Element, tag: string, pag
 }
 
 const EMPTY_TRASH = ['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'cite', 'em', 'strong', 'figure'];
+
+/**
+ * Divi erkannt? Liefert dann die Top-Level-Module des Body-Bereichs (keine
+ * verschachtelten). Marker ist `.et_pb_module` — nur wenn Module vorhanden
+ * sind, gilt eine Seite als Divi-strukturiert; normale WordPress-Sites
+ * (klassische Themes mit .entry-content/article) liefern eine leere Liste
+ * und nutzen den bisherigen Container-Kinder-Pfad.
+ */
+function findDiviModules($: cheerio.CheerioAPI): cheerio.AnyNode[] {
+  for (const scopeSel of MODULE_SCOPES) {
+    const scope = $(scopeSel).first();
+    if (!scope.length) continue;
+    const modules = scope
+      .find(MODULE_SELECTOR)
+      .toArray()
+      .filter((el) => !$(el).parents(MODULE_SELECTOR).length);
+    if (modules.length) return modules;
+  }
+  return [];
+}
 
 /** Rekursive Bereinigung: erlaubte Tags behalten (samt erlaubter Attribute),
  *  verbotene kinderlos entfernen, Layout-Tags (div, span, …) unwrappen. */
@@ -174,11 +196,19 @@ export function extractPage(html: string, url: string, selectors: string[]): Ext
     throw new Error(`No content found (tried: ${candidates.join(', ')})`);
   }
 
-  // Blöcke = Top-Level-Kinder des Containers. Original-Klassen werden VOR dem
-  // Strippen gesichert (Fingerprint fürs Block-Labeling), dann wird jeder Block
-  // einzeln bereinigt.
+  // Block-Quelle — Divi erkannt (Module im Body-Bereich)? Dann sind die
+  // Top-Level-Module die Blöcke (Dokument-Reihenfolge): Meta, Autor und
+  // Kommentare liegen bei Theme-Builder-Layouts als eigene Module NEBEN dem
+  // Content-Container und wären sonst nicht labelbar. Ohne Divi: wie bisher
+  // die Top-Level-Kinder des Containers (normale WordPress-Sites).
+  // Original-Klassen werden VOR dem Strippen gesichert (Fingerprint fürs
+  // Block-Labeling), dann wird jeder Block einzeln bereinigt.
+  const diviModules = findDiviModules($);
+  const sources = diviModules.length
+    ? diviModules
+    : [...(container as { children: cheerio.AnyNode[] }).children];
   const blocks: ContentBlock[] = [];
-  for (const child of [...(container as { children: cheerio.AnyNode[] }).children]) {
+  for (const child of sources) {
     const origClass = child.type === 'tag' ? String(child.attribs?.['class'] ?? '') : '';
     if (child.type === 'tag') {
       const tag = child.tagName.toLowerCase();

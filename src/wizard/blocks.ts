@@ -14,6 +14,7 @@ export const BLOCK_LABELS = [
   'article',
   'meta-categories',
   'meta-date',
+  'meta-comments',
   'author-bio',
   'comments',
   'related-posts',
@@ -72,19 +73,37 @@ export function matchLabel(rules: BlockRule[], block: ContentBlock, url: string,
   return null;
 }
 
-export function suggestLabel(block: ContentBlock): BlockLabel {
+// Ein Kandidat für "das ist der Seitentitel als eigener Block" muss diese
+// Mindestlänge haben, damit kurze Texte nicht versehentlich als Titel präfixen.
+const MIN_TITLE_BLOCK_LENGTH = 15;
+
+export function suggestLabel(block: ContentBlock, pageTitle = ''): BlockLabel {
   const cls = block.origClass.toLowerCase();
+  // Icon-Fonts (Divi & Co.) stecken Glyphen in Unicode-Private-Use — die dürfen
+  // die Text-basierten Heuristiken (Anker am Wortanfang) nicht stören.
   const text = block.html
     .replace(/<[^>]+>/g, ' ')
+    .replace(/[\uE000-\uF8FF]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   if (/comment/.test(cls)) return 'comments';
+  if (/post[-_]?nav/.test(cls)) return 'related-posts';
   if (/author|-bio/.test(cls)) return 'author-bio';
   if (/share|social/.test(cls)) return 'share-buttons';
   if (/newsletter|subscribe/.test(cls)) return 'newsletter';
   if (/related/.test(cls)) return 'related-posts';
+  if (/^written by/i.test(text)) return 'author-bio';
+  // Kommentar-Anker/Count (z. B. Divi-Blurb „Comments: 0" → #respond) — kurz
+  // genug, dass echte Artikelabsätze, die mit „Comments:" beginnen, nicht treffen.
+  if (text.length < 60 && /^comments?\s*:/i.test(text)) return 'meta-comments';
   if (/(^|[\s_-])post-meta([\s_-]|$)/.test(cls)) return 'meta-categories';
   if (/\/category\//.test(block.html) && text.length < 200) return 'meta-categories';
   if (text.length < 60 && /\b(19|20)\d{2}\b/.test(text)) return 'meta-date';
+  if (/^no results found/i.test(text)) return 'drop';
+  // Der Titel steht im Frontmatter — ein Block, der nur den Seitentitel
+  // enthält, ist im Content redundant (Design rendert ihn aus den Metadaten).
+  if (pageTitle && text.length >= MIN_TITLE_BLOCK_LENGTH && pageTitle.toLowerCase().startsWith(text.toLowerCase())) {
+    return 'drop';
+  }
   return 'article';
 }

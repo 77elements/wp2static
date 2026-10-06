@@ -22,6 +22,26 @@ extractForm?.addEventListener('submit', () => {
   }
 });
 
+// Block-Labeling ohne Navigation: Apply läuft per fetch, der Block wird nur
+// umgeclasst — kein Sprung, kein Scrollverlust. Ohne JS: normaler POST, der
+// Redirect landet per #block-<i>-Anker beim gelabelten Block.
+document.querySelectorAll<HTMLFormElement>('.wizard__blocklabel form').forEach((labelForm) => {
+  labelForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const label = labelForm.querySelector<HTMLSelectElement>('select[name="label"]');
+    fetch(labelForm.action, { method: 'POST', body: new FormData(labelForm) })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        labelForm
+          .closest<HTMLElement>('.wizard__block')
+          ?.classList.toggle('wizard__block--nonarticle', (label?.value ?? 'article') !== 'article');
+      })
+      .catch(() => {
+        labelForm.submit(); // Fallback: normaler POST (feuert kein submit-Event)
+      });
+  });
+});
+
 const escapeHtml = (s: string): string =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
 

@@ -4,6 +4,7 @@
  */
 
 import { BLOCK_LABELS } from '../wizard/blocks';
+import type { NavItem } from '../wizard/structure';
 
 const escapeHtml = (s: string): string =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
@@ -239,6 +240,93 @@ export function sourceSummary(
 </main>`);
 }
 
+export function structurePage(
+  slug: string,
+  opts: {
+    structure?: {
+      scannedFrom: string;
+      scannedAt: string;
+      navigation: NavItem[];
+      logo: { src: string; alt: string } | null;
+      footer: { scannedFrom: string; navigation: NavItem[] } | null;
+    } | null;
+    navSelector?: string;
+    footerSelector?: string;
+    error?: string;
+  } = {},
+): string {
+  const { structure = null, navSelector = '', footerSelector = '', error } = opts;
+  const renderItems = (items: NavItem[]): string =>
+    items.length
+      ? `<ul>${items
+          .map(
+            (i) =>
+              `<li>${
+                i.href
+                  ? `<a href="${escapeHtml(i.href)}">${escapeHtml(i.label || i.href)}</a>`
+                  : escapeHtml(i.label)
+              }${renderItems(i.items)}</li>`,
+          )
+          .join('')}</ul>`
+      : '';
+  const scanned = structure
+    ? `<p>Scanned from <code>${escapeHtml(structure.scannedFrom)}</code> at <code>${escapeHtml(structure.scannedAt)}</code>.</p>`
+    : '';
+  const logo = structure
+    ? `<p><strong>Logo:</strong> ${
+        structure.logo
+          ? `<code>${escapeHtml(structure.logo.src)}</code>${structure.logo.alt ? ` (${escapeHtml(structure.logo.alt)})` : ''}`
+          : 'no image found in header'
+      }</p>`
+    : '';
+  const footer = structure
+    ? `<h2 class="h3">Footer</h2>${
+        structure.footer
+          ? `<div class="wizard__nav-preview">${renderItems(structure.footer.navigation)}</div>`
+          : '<p>No footer navigation found.</p>'
+      }`
+    : '';
+  const nav = structure
+    ? `<h2 class="h3">Main navigation</h2><div class="wizard__nav-preview">${renderItems(structure.navigation)}</div>`
+    : '<p>No structure captured yet.</p>';
+  return layout(`Structure — ${slug}`, `
+<main class="wizard">
+  <section class="wizard__card">
+    <header class="wizard__header">
+      <p class="wizard__kicker">wp2static · ${escapeHtml(slug)}</p>
+      <h1 class="h1">Structure</h1>
+    </header>
+    <div class="wizard__body">
+      <p>Scans the start page once: main navigation from the first <code>&lt;header&gt;</code>/<code>&lt;nav&gt;</code>, footer from the last <code>&lt;footer&gt;</code>, logo from the first header image. These regions are site-wide — one scan covers all pages. Saved to <code>data/site.json</code>.</p>
+      <p class="form__note">Finds nothing? Enter a container selector, like the content selector in the extraction step. Saved site-wide.</p>
+      ${error ? `<p class="wizard__error" role="alert">${escapeHtml(error)}</p>` : ''}
+      ${scanned}
+      ${logo}
+      ${nav}
+      ${footer}
+      <form id="structure-form" method="post" action="/wizard/${escapeHtml(slug)}/structure">
+        <div class="form__row">
+          <label for="navselector">Navigation selector (optional)</label>
+          <input class="input" id="navselector" name="navselector" type="text"
+                 placeholder="empty = first &lt;header&gt;/&lt;nav&gt;" value="${escapeHtml(navSelector)}">
+        </div>
+        <div class="form__row">
+          <label for="footerselector">Footer selector (optional)</label>
+          <input class="input" id="footerselector" name="footerselector" type="text"
+                 placeholder="empty = last &lt;footer&gt;" value="${escapeHtml(footerSelector)}">
+        </div>
+      </form>
+    </div>
+    <footer class="wizard__actions">
+      <div class="l-row--end-pair">
+        <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/extract">Back</a>
+        <button class="btn" type="submit" form="structure-form">Scan structure</button>
+      </div>
+    </footer>
+  </section>
+</main>`);
+}
+
 export function extractionForm(
   slug: string,
   opts: {
@@ -284,7 +372,7 @@ export function extractionForm(
     ? opts.labeledBlocks
         .map(
           (b, i) => `
-      <div class="wizard__block${b.current && b.current !== 'article' ? ' wizard__block--nonarticle' : ''}">
+      <div class="wizard__block${b.current && b.current !== 'article' ? ' wizard__block--nonarticle' : ''}" id="block-${i}">
         ${b.html}${labelBar(i, b.origClass, b.current ?? b.suggested)}
       </div>`,
         )
@@ -314,7 +402,7 @@ export function extractionForm(
       <h1 class="h1">Extraction</h1>
     </header>
     <div class="wizard__body">
-      <p>Pick a URL for a Markdown preview. This fetches exactly one page from the source site.</p>
+      <p>Pick a URL for a sanitized HTML preview. This fetches exactly one page from the source site.</p>
       ${opts.error ? `<p class="wizard__error" role="alert">${escapeHtml(opts.error)}</p>` : ''}
       <form id="extract-form" method="post" action="/wizard/${escapeHtml(slug)}/extract">
         <div class="form__row">
@@ -333,6 +421,7 @@ export function extractionForm(
     <footer class="wizard__actions">
       <div class="l-row--end-pair">
         <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/source">Back</a>
+        <a class="btn btn--secondary" href="/wizard/${escapeHtml(slug)}/structure">Next</a>
         <button class="btn" type="submit" form="extract-form">Preview</button>
       </div>
     </footer>
